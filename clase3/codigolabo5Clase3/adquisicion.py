@@ -2,7 +2,7 @@
 import time
 import numpy as np
 import pandas as pd
-from sr830 import SR830
+from claseLockIn import SR830
 
 def sweep_aux_voltage(
     lockin: SR830,

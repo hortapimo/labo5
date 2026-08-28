@@ -24,7 +24,7 @@ with SR830(RESOURCE_LOCKIN) as lockin:
     settle_time=SETTLE_TIME,
     first_point_settle_time=FIRST_SETTLE_TIME,
         )
-    save_dataset(df_medicion, OUTPUT_FILENAME)
+    save_dataset_csv(df_medicion, OUTPUT_FILENAME)
 
 #%% analisamos datos ..
 
