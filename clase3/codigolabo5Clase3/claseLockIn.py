@@ -9,7 +9,7 @@ class SR830:
         2e-9, 5e-9, 10e-9, 20e-9, 50e-9, 100e-9, 200e-9, 500e-9,
         1e-6, 2e-6, 5e-6, 10e-6, 20e-6, 50e-6, 100e-6, 200e-6, 500e-6,
         1e-3, 2e-3, 5e-3, 10e-3, 20e-3, 50e-3, 100e-3, 200e-3, 500e-3, 1.0
-    )  # en Voltios
+    ) #en Volt
     TIME_CONSTANT_VALUES = (
         10e-6, 30e-6, 100e-6, 300e-6, 1e-3, 3e-3, 10e-3, 30e-3, 100e-3, 300e-3,
         1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1e3, 3e3, 10e3, 30e3
@@ -81,18 +81,18 @@ class SR830:
         time.sleep(wait_time)
         val1, val2 = self.get_measurement(is_xy=is_xy)
         primary_val = abs(val1)
-        while primary_val < self.SCALE_VALUES[scale_idx] * low_thresh and scale_idx > 0:
+        while primary_val < self.SCALE_VALUES[scale_idx]*1e-6 * low_thresh and scale_idx > 0:#agreue el 1e-6 para pasar a amp
             scale_idx -= 1
             self.set_scale_index(scale_idx)
             time.sleep(wait_time)
             val1, val2 = self.get_measurement(is_xy=is_xy)
             primary_val = abs(val1)
-        while primary_val > self.SCALE_VALUES[scale_idx] * high_thresh and scale_idx < len(self.SCALE_VALUES) - 1:
+        while primary_val > self.SCALE_VALUES[scale_idx] *1e-6 * high_thresh and scale_idx < len(self.SCALE_VALUES) - 1:
             scale_idx += 1
             self.set_scale_index(scale_idx)
             time.sleep(wait_time)
             val1, val2 = self.get_measurement(is_xy=is_xy)
             primary_val = abs(val1)
         if debug:
-            print(f"[AutoScale] Escala fijada en {self.SCALE_VALUES[scale_idx]} V (Val: {primary_val:g})")
+            print(f"[AutoScale] Escala fijada en {self.SCALE_VALUES[scale_idx]*1e-6} A (Val: {primary_val:g})")
         return val1, val2

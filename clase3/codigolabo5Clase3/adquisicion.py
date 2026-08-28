@@ -22,7 +22,7 @@ def sweep_aux_voltage(
     
     for idx, v in enumerate(voltages):
         lockin.set_aux_out(aux_channel, v)
-        
+        lockin.auto_scale()
         # Tiempo de estabilización (más largo en el primer punto si se desea)
         wait = first_point_settle_time if idx == 0 else settle_time
         time.sleep(wait)
