@@ -24,11 +24,17 @@ def analizar_espectro(archivo_csv):
   #amplitudes_picos = a0[peaks]
   #longitudes_picos = l0[peaks]
 
-  # seleccionamos estrictamente el primer pico
-  idx_pico = peaks[0]
+# Obtenemos las amplitudes de todos los picos detectados
+  amplitudes_picos = a0[peaks]
+
+  # Buscamos qué pico tiene el valor máximo
+  indice_maximo = np.argmax(amplitudes_picos)
+
+  # Seleccionamos el índice correspondiente a ese pico máximo
+  idx_pico = peaks[indice_maximo]
+  
   longitud_pico = l0[idx_pico]
   amplitud_pico = a0[idx_pico]
-
   # cálculo de incerteza
 
   dist_izq = abs(l0[idx_pico] - l0[idx_pico - 1])
@@ -37,7 +43,7 @@ def analizar_espectro(archivo_csv):
   # menor distancia dividida por 2
   incerteza = min(dist_izq, dist_der) / 2.0
 
-  print(f"Primer pico en: {longitud_pico:.2f} nm")
+  print(f"Pico máximo en: {longitud_pico:.2f} nm")
   print(f"Incerteza calculada: \u00b1{incerteza:.4f} nm")
 
   # Ejemplo de comentario 

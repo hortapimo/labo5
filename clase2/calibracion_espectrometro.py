@@ -21,7 +21,16 @@ def analizar_espectro(archivo_csv):
 
     peaks, _ = find_peaks(a0, prominence=0.1)
     
-    idx_pico = peaks[0]
+
+  # Obtenemos las amplitudes de todos los picos detectados
+    amplitudes_picos = a0[peaks]
+
+  # Buscamos qué pico tiene el valor máximo
+    indice_maximo = np.argmax(amplitudes_picos)
+
+  # Seleccionamos el índice correspondiente a ese pico máximo
+    idx_pico = peaks[indice_maximo]
+
     longitud_pico = l0[idx_pico]
     amplitud_pico = a0[idx_pico]
     
