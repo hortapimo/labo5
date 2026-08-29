@@ -35,7 +35,7 @@ def analizar_espectro(archivo_csv):
   print(f"Primer pico en: {longitud_pico:.2f} nm")
   print(f"Incerteza calculada: \u00b1{incerteza:.4f} nm")
 
-  #
+  # Ejemplo de comentario 
 
   # cálculo del ancho de banda
 
