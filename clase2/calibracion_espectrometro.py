@@ -16,8 +16,8 @@ def analizar_espectro(archivo_csv):
 
   peaks, _ = find_peaks(a0, prominence = 0.1)
 
-  amplitudes_picos = a0[peaks]
-  longitudes_picos = l0[peaks]
+  #amplitudes_picos = a0[peaks]
+  #longitudes_picos = l0[peaks]
 
   # seleccionamos estrictamente el primer pico
   idx_pico = peaks[0]
