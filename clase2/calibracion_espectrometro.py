@@ -59,8 +59,8 @@ def analizar_espectro(archivo_csv):
 
 # %%
 
-carpeta_mediciones = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2/Mediciones")
-carpeta_mediciones = Path("F:/Juan/UBA/Materias/Física/Laboratorio 5/GitHub/labo5/clase2")
+carpeta_mediciones = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
+# carpeta_mediciones = Path("F:/Juan/UBA/Materias/Física/Laboratorio 5/GitHub/labo5/clase2")
 archivos = sorted(carpeta_mediciones.glob("*.csv"))
 
 if not archivos:
@@ -96,7 +96,7 @@ print(lambdas_hallados)
 print(anchos_de_banda)
 # %% 1. Gráfico de Offset
 
-#carpeta_destino = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
+carpeta_destino = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
 
 plt.figure(figsize=(10,6))
 plt.errorbar(lambdas_pedidos, offsets, yerr=incertezas_offsets, fmt="o", color="blue", 
@@ -109,7 +109,7 @@ plt.grid(which="major", alpha=0.8)
 plt.grid(which="minor", alpha=0.3)
 plt.minorticks_on()
 plt.tight_layout()
-#plt.savefig(carpeta_destino / "grafico_offset.png", dpi=300, bbox_inches="tight")
+plt.savefig(carpeta_destino / "grafico_offset.png", dpi=300, bbox_inches="tight")
 plt.show()
 
 # %% 2. Gráfico de Ancho de Banda
@@ -122,7 +122,7 @@ plt.grid(which="major", alpha=0.8)
 plt.grid(which="minor", alpha=0.3)
 plt.minorticks_on()
 plt.tight_layout()
-#plt.savefig(carpeta_destino / "grafico_ancho_banda.png", dpi=300, bbox_inches="tight")
+plt.savefig(carpeta_destino / "grafico_ancho_banda.png", dpi=300, bbox_inches="tight")
 plt.show()
 
 # (Interesante: el parámetro dpi=300 asegura que los gráficos se guarden con excelente resolución, 
