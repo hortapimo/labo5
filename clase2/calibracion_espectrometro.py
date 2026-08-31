@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import re
 
 # --- Cargar estilo de gráficos ---
-ruta_estilo = Path("/home/juan_cruz/Documentos/Mi_git/labo5/practica 1 - dia 1/estiloGraficos.mplstyle")
-plt.style.use(ruta_estilo)
+#ruta_estilo = Path("/home/juan_cruz/Documentos/Mi_git/labo5/practica 1 - dia 1/estiloGraficos.mplstyle")
+#plt.style.use(ruta_estilo)
+plt.style.use('./estiloGraficos.mplstyle')
 # ---------------------------------  
 # %%
 
@@ -59,6 +60,7 @@ def analizar_espectro(archivo_csv):
 # %%
 
 carpeta_mediciones = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2/Mediciones")
+carpeta_mediciones = Path("F:/Juan/UBA/Materias/Física/Laboratorio 5/GitHub/labo5/clase2")
 archivos = sorted(carpeta_mediciones.glob("*.csv"))
 
 if not archivos:
@@ -68,6 +70,7 @@ lambdas_pedidos = []
 offsets = []
 incertezas_offsets = []
 anchos_de_banda = [] # Lista para el segundo gráfico
+lambdas_hallados = []
 
 for archivo in archivos:
     coincidencia = re.match(r'^(\d+)', archivo.name)
@@ -84,9 +87,13 @@ for archivo in archivos:
         offsets.append(offset)
         incertezas_offsets.append(incerteza)
         anchos_de_banda.append(ancho_banda)
+        lambdas_hallados.append(longitud_pico)
         
         print(f"Pedido: {lambda_pedido} nm | Offset: {offset:.2f} nm | Ancho de banda: {ancho_banda:.2f} nm")
-
+lambdas_hallados = np.array(lambdas_hallados)
+anchos_de_banda = np.array(anchos_de_banda)
+print(lambdas_hallados)
+print(anchos_de_banda)
 # %% 1. Gráfico de Offset
 
 #carpeta_destino = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
