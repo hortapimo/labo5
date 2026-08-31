@@ -21,7 +21,7 @@ v, i, _, _= tuki2("medicionRuidoBlanco.txt")
 
 fig, ax = plt.subplots(figsize=(8,6))
 
-ax.errorbar(v,i*1e12,yerr=np.abs(i)*0.01*1e12,fmt=".", label="Datos")
+ax.errorbar(v,i*1e12,xerr=np.abs(v)*0.01, yerr=np.abs(i)*0.01*1e12,fmt=".", label="Datos")
 ax.set_xlabel("Voltaje [V]")
 ax.set_ylabel("Corriente [pA]")
 ax.legend()

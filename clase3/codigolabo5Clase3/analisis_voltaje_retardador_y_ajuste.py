@@ -30,48 +30,30 @@ datos = [ ("barrido_420nm_5V.txt","420 nm", "CurvaLambda420nm.png"),
           ("barrido_720nm_5V_2.txt","720 nm", "CurvaLambda720nm.png"),  ]
 
 #%%
-# grafico todos juntos
-fig, ax = plt.subplots(figsize=(14,12))
-colores = plt.cm.plasma(np.linspace(0, 1, len(datos)))
-v_ruido, i_ruido, _, _ = tuki2("medicionRuidoBlanco.txt")
-i_ruido = i_ruido*1e12 
-for (archivo, etiqueta, null), color in zip(datos, colores):
-    v, i, _, _= tuki2(archivo)
-    i = i*1e12 # paso a unidades de pA
-    error_sistematico_i = np.abs(i)*0.01 # el manual dice que es el 1%
-    error_sistematico_v = np.abs(v)*0.01 # pongo error en x porque no estamos 
-                                         # haciendo cuadrados mínimos
-    ax.errorbar(v,i,xerr=error_sistematico_v, yerr=error_sistematico_i,
-                alpha=0.9,
-                fmt="o",label=r"$\lambda_{nom}$ = "f"{etiqueta}", color=color)
-ax.errorbar(v_ruido,i_ruido,xerr=np.abs(v_ruido)*0.01, yerr=np.abs(i_ruido)*0.01,
-            alpha=0.9, color="black",
-            fmt="o",label="Ruido del sistema")
-ax.axhline(y=0, ls="--",label="Origen", color="red")
-ax.set_xlabel("Voltaje [V]")
-ax.set_ylabel("Corriente [pA]")
-ax.set_xlim(-2.5,0)
-ax.set_ylim(-10,10)
-ax.legend()
-fig.tight_layout()
-fig.savefig("BarridoLambdasTodasJuntas.png")
-fig.show()
-
-#%%
 # grafico por separado
-for (archivo, etiqueta, guardado) in datos:
+offset = 2.10 # pA
+error_offset = 0.01 # pA
+for (archivo, etiqueta, null) in datos:
     fig1, ax1 = plt.subplots(figsize=(8,6))
     v, i, _, _= tuki2(archivo)
     i = i*1e12 # paso a unidades de pA
     error_sistematico_i = np.abs(i)*0.01 # el manual dice que es el 1%
     error_sistematico_v = np.abs(v)*0.01 # pongo error en x porque no estamos 
                                          # haciendo cuadrados mínimos
+    i = i - offset
+    error_i = np.sqrt((error_sistematico_i**2) + (error_offset**2))
     ax1.errorbar(v,i,xerr=error_sistematico_v, yerr=error_sistematico_i,
                 fmt="o",label=r"$\lambda_{nom}$ = "f"{etiqueta}")
     ax1.set_xlabel("Voltaje [V]")
     ax1.set_ylabel("Corriente [pA]")
     ax1.legend()
     fig1.tight_layout()
-    fig1.savefig(guardado)
     fig1.show()
+
+
+
+
+
+
+
 
