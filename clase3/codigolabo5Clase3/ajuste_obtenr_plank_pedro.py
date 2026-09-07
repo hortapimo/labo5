@@ -23,6 +23,8 @@ def ajute(x_datos, y_datos):
 fig, ax =plt.subplots()
 ajuste, coef=ajute(frec, potencial_corte)
 ax.scatter(frec, potencial_corte, label="datos")
+ax.set_xlabel("frecuencia [Hz]")
+ax.set_ylabel("Potencial de frenado [V]")
 x= np.linspace(frec[0], frec[-1], 50)
 e=1.600217e-19
 ax.plot(x, ajuste(x), label=f"h_medida: {-1 * coef[1] * e:.2e} [J*seg]\n h tabulada:{ 6.62e-34}[J*seg]")
