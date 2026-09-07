@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
+plt.style.use('./estiloGraficos.mplstyle')
 
 def load_archiv0(name):
     df = pd.read_csv(name, skiprows=1)
@@ -19,14 +19,23 @@ apertura4=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura5.txt")#Este qued
 tapando=load_archiv0('barridoFinal_435nm_5V_tapando.txt')
 
 #%% PAra ver el archivo
-def graficar(*tuplasXY):
+def graficar(*tuplasXY,**karg):
     fig, ax = plt.subplots()
     
     for (x,y,label) in tuplasXY:
         ax.scatter(x,y,label=label)
+    
+    try:
+        ax.set_xlabel(karg["xlabel"])
+        ax.set_ylabel(karg["ylabel"])    
+    except: pass  
+ 
     ax.legend()
     
-graficar((apertura3['V'],apertura3['r'],"sinColimador"))
+graficar((apertura1['V'],apertura1['Ix'],"apertura 1"),xlabel="V", ylabel="I[A]")
+graficar((apertura2['V'],apertura2['Ix'],"apertura 2"),xlabel="V", ylabel="I[A]")
+graficar((apertura3['V'],apertura3['Ix'],"apertura 3"),xlabel="V", ylabel="I[A]")
+graficar((apertura4['V'],apertura4['Ix'],"apertura 4"),xlabel="V", ylabel="I[A]")
 
 #%%  
 def dividirDatos(df):
@@ -72,10 +81,11 @@ def calcularParametroEfectoFotInverso(df):
 
 def calcularParametroEfectoFotInverso2(df):
     aux = 0
-    for i in range(10): 
+    n=4
+    for i in range(n): 
         aux += abs(df['Ix'].iloc[i]/df['Ix'].iloc[-1*i-1])
     
-    return aux/10
+    return aux/n
 
     
 #%% grafico con calcularParametroEfectoFotInverso
@@ -102,4 +112,6 @@ paramSinColima = calcularParametroEfectoFotInverso2(sinColimador)
 
 fig,ax = plt.subplots()
 ax.scatter(["1","2","3","4", "sin colimador"],[paramAp1, paramAp2, paramAp3, paramAp4, paramSinColima])
+#%%
+
 
