@@ -12,23 +12,31 @@ legend.fontsize: 14
 figure.titlesize: 20
 
 # 2. Grosor de líneas y marcadores (mayor visibilidad)
-lines.linewidth: 2.5
-lines.markersize: 10
+lines.linewidth: 1.5
+lines.markersize: 8
 lines.markeredgewidth: 1.5
 
 # 3. Configuración de la cuadrícula (Grid)
-# Activa tanto el grid mayor como el menor
 axes.grid: True
 axes.grid.which: both
 xtick.minor.visible: True
 ytick.minor.visible: True
 
-# Nota: matplotlib aplica el mismo alpha al grid mayor y menor desde el .mplstyle
 grid.linestyle: --
-grid.alpha: 0.7
+grid.alpha: 0.5
 grid.color: b0b0b0
 
 figure.autolayout: True
 
-
+# 4. Tipografía
 font.family: serif
+
+# 5. Paleta de Colores Profesional (Tol / Publication Muted)
+# Azul acero, carmín sobrio, verde bosque, ámbar oscuro, violeta apagado, cian petróleo
+axes.prop_cycle: cycler('color', ['2B5C8F', 'C0392B', '2E7D32', 'D97706', '6A1B9A', '00838F'])
+
+# 6. Detalles visuales sobrios
+axes.edgecolor: 333333
+axes.linewidth: 1.2
+legend.framealpha: 0.9
+legend.edgecolor: 0.8

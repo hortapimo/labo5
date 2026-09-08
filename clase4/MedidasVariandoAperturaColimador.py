@@ -12,6 +12,7 @@ def load_archiv0(name):
 
 
 sinColimador=load_archiv0("barridoFinal_435nm_5V.txt")
+aux=load_archiv0("barrido_420nm_5V_bien.txt")
 apertura1=load_archiv0("barridoFinal_435nm_5V_colimado.txt")
 apertura2=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura2.txt")
 apertura3=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura3.txt")
@@ -32,10 +33,10 @@ def graficar(*tuplasXY,**karg):
  
     ax.legend()
     
-graficar((apertura1['V'],apertura1['Ix'],"apertura 1"),xlabel="V", ylabel="I[A]")
+graficar((tapando['V'],tapando['Ix'],"ruido"),xlabel="V", ylabel="I[A]")
 graficar((apertura2['V'],apertura2['Ix'],"apertura 2"),xlabel="V", ylabel="I[A]")
-graficar((apertura3['V'],apertura3['Ix'],"apertura 3"),xlabel="V", ylabel="I[A]")
-graficar((apertura4['V'],apertura4['Ix'],"apertura 4"),xlabel="V", ylabel="I[A]")
+# graficar((apertura3['V'],apertura3['Ix'],"apertura 3"),xlabel="V", ylabel="I[A]")
+# graficar((apertura4['V'],apertura4['Ix'],"apertura 4"),xlabel="V", ylabel="I[A]")
 
 #%%  
 def dividirDatos(df):

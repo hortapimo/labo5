@@ -66,7 +66,7 @@ def calcularFactor2(curvaReferencia, curva2):
     print(f"la j fue {j}")
     return f
 
-def calcularFactor3(curvaReferencia, curva2, n=5, offset_ref=-6, col='Ix'):
+def calcularFactor3(curvaReferencia, curva2, n=10, offset_ref=-7, col='Ix'):
     """
     Alinea por mínimos cuadrados una ventana de longitud n de curvaReferencia
     que termina en offset_ref con los últimos n puntos de curva2.
@@ -94,8 +94,18 @@ def calcularFactor3(curvaReferencia, curva2, n=5, offset_ref=-6, col='Ix'):
 def graficar(*tuplasXY,**karg):
     fig, ax = plt.subplots()
     
-    for (x,y,label) in tuplasXY:
-        ax.plot(x,y,label=label,marker='o')
+    for (x,y,label,marker) in tuplasXY:
+        ax.errorbar(
+        x, y,
+        xerr=abs(x * 0.01),
+        yerr=abs(y * 0.01),
+        label=label,
+        marker=marker,
+        capsize=3.5,        # Remate visible en los extremos
+        capthick=1.2,       # Grosor del remate
+        elinewidth=1.2,     # Grosor del trazo de la barra de error
+        barsabove=True      # Dibuja la barra por encima del marcador para que no quede tapada
+        )
     
     try:
         ax.set_xlabel(karg["xlabel"])
@@ -103,19 +113,45 @@ def graficar(*tuplasXY,**karg):
     except: pass  
 
  
-    ax.legend()
+    #ax.legend()
+    
+
+def calcularFactorInterp(curvaReferencia, curva2, n=5, col_v='V', col_i='Ix'):
+    """
+    Interpola la corriente de la curva de referencia sobre las tensiones
+    de los ultimos n puntos de curva2 y calcula el factor analitico.
+    """
+    v_ref = curvaReferencia[col_v].to_numpy(dtype=float)
+    i_ref = curvaReferencia[col_i].to_numpy(dtype=float)
+
+    v2_sub = curva2[col_v].iloc[-n:].to_numpy(dtype=float)
+    y2 = curva2[col_i].iloc[-n:].to_numpy(dtype=float)
+
+    # Si V esta en orden decreciente, np.interp requiere que x este ordenado creciente
+    if v_ref[0] > v_ref[-1]:
+        v_ref = v_ref[::-1]
+        i_ref = i_ref[::-1]
+
+    # Evalua curvaReferencia exactamente en los voltajes de curva2
+    y_ref = np.interp(v2_sub, v_ref, i_ref)
+
+    den = np.dot(y2, y2)
+    if den == 0:
+        raise ValueError("curva2 contiene ceros en el rango seleccionado.")
+
+    return np.dot(y_ref, y2) / den
 #%%
 #factorA4_A1=calcularFactor(apertura4, apertura1)
 #La medcion con apertura 1 tiene una señal muy baja y es muy ruidosa, arruina el grafico, la voya sacr, por eso renombre todo
-fmanual=0.7#ya e cualquier cosa
-factor_A3=calcularFactor3(sinColimador, apertura4)
-factor_A2=calcularFactor3(sinColimador, apertura3)
-factor_A1=calcularFactor3(sinColimador, apertura2)
+fmanual=1#ya e cualquier cosa
+factor_A3=calcularFactorInterp(sinColimador, apertura4)
+factor_A2=calcularFactorInterp(sinColimador, apertura3)
+factor_A1=calcularFactorInterp(sinColimador, apertura2)
 
-graficar((sinColimador["V"],sinColimador["Ix"],"Sin colimar"),
-    (apertura4["V"],apertura4["Ix"]*factor_A3*fmanual,"apertura 3"),
-         (apertura3["V"],apertura3["Ix"]*factor_A2*fmanual,"apertura 2"),
-         (apertura2["V"],apertura2["Ix"]*factor_A1*fmanual,"apertura 1"),
+graficar((sinColimador["V"],sinColimador["Ix"],"Sin colimar - Referencia", "."),
+    (apertura4["V"],apertura4["Ix"]*factor_A3*fmanual,"Apertura 3","."),
+         (apertura3["V"],apertura3["Ix"]*factor_A2*fmanual,"Apertura 2","."),
+         (apertura2["V"],apertura2["Ix"]*factor_A1*fmanual,"Apertura 1","."),
          xlabel="voltaje [V]", ylabel="I [A]")
 
 #%%
