@@ -112,7 +112,7 @@ for res in resultados:
     ax1.set_ylabel("Amplitud [u.a.]", fontsize=14)
     ax1.set_xlabel(r"$\lambda$ [nm]", fontsize=14)
     ax1.set_xlim((420,730))
-    ax1.set_title(f"Espectro: {archivo.stem}", fontsize=16)
+   # ax1.set_title(f"Espectro: {archivo.stem}", fontsize=16)
     ax1.tick_params(axis='both', which='major', labelsize=12)
     ax1.legend(loc="best", fontsize=12)
     ax1.grid(which="major")
@@ -133,7 +133,7 @@ for res in resultados:
     # Aumento de labelsize y fontsize
     ax2.set_xlabel(r"$\lambda_{pedido}$ [nm]", fontsize=14)
     ax2.set_ylabel(r"Desplazamiento ($\lambda_{med} - \lambda_{ped}$) [nm]", fontsize=14)
-    ax2.set_title("Desplazamiento vs. $\lambda$ Pedido", fontsize=16)
+  #  ax2.set_title("Desplazamiento vs. $\lambda$ Pedido", fontsize=16)
     ax2.tick_params(axis='both', which='major', labelsize=12)
     ax2.legend(loc="best", fontsize=12)
     ax2.grid(which="major", alpha=0.8)

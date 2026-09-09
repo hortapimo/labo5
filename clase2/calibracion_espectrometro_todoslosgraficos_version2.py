@@ -223,6 +223,7 @@ def analizar_espectro(archivo_csv, carpeta_destino):
     plt.minorticks_on()
     plt.grid(which="minor", alpha=0.3)
     plt.tight_layout()
+ #   plt.title(f"Espectro: {archivo.stem}", fontsize=16)
     
     # Guardado automático
     nombre_salida = carpeta_destino / f"espectro_{archivo_csv.stem}.png"
