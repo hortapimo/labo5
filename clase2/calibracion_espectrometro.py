@@ -7,7 +7,7 @@ import re
 # --- Cargar estilo de gráficos ---
 #ruta_estilo = Path("/home/juan_cruz/Documentos/Mi_git/labo5/practica 1 - dia 1/estiloGraficos.mplstyle")
 #plt.style.use(ruta_estilo)
-plt.style.use('./estiloGraficos.mplstyle')
+plt.style.use('./Documentos/Mi_git/labo5/clase2/estiloGraficos.mplstyle')
 # ---------------------------------  
 # %%
 
@@ -100,10 +100,10 @@ carpeta_destino = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
 
 plt.figure(figsize=(10,6))
 plt.errorbar(lambdas_pedidos, offsets, yerr=incertezas_offsets, fmt="o", color="blue", 
-             markersize=8, capsize=5, label="Offset instrumental", lw=2)
-plt.axhline(0, color='red', linestyle='--', alpha=0.6, label="Offset nulo (Ideal)")
+             markersize=8, capsize=5, label="Desplazamiento instrumental", lw=2)
+plt.axhline(0, color='red', linestyle='--', alpha=0.6, label="Desplazamiento nulo (Ideal)")
 plt.xlabel(r"$\lambda_{pedido}$ [nm]")
-plt.ylabel(r"Offset ($\lambda_{medido} - \lambda_{pedido}$) [nm]")
+plt.ylabel(r"Desplazamiento ($\lambda_{medido} - \lambda_{pedido}$) [nm]")
 plt.legend(loc="best")
 plt.grid(which="major", alpha=0.8)
 plt.grid(which="minor", alpha=0.3)

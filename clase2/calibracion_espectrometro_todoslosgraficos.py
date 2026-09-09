@@ -9,7 +9,7 @@ import re
 #plt.style.use(ruta_estilo)
 # ---------------------------------    
 
-plt.style.use('./estiloGraficos.mplstyle')
+plt.style.use('./Documentos/Mi_git/labo5/clase2/estiloGraficos.mplstyle')
 # %%
 
 def tuki(archivo: Path):
@@ -53,7 +53,7 @@ def analizar_espectro(archivo_csv, carpeta_destino):
 
     print(f"Pico máximo en: {longitud_pico:.2f} nm")
     print(f"Incerteza calculada: \u00b1{incerteza:.4f} nm")
-    print(f"Offset (Medido - Pedido): {offset:.2f} nm")
+    print(f" Δλ (desplazamiento instrumental): {offset:.2f} nm")
 
     # cálculo del ancho de banda
     mitad_intensidad = amplitud_pico / 2.0
@@ -81,20 +81,24 @@ def analizar_espectro(archivo_csv, carpeta_destino):
     plt.errorbar(l0, a0, fmt=".", alpha=0.7, lw=3)
 
     # Cruz SOLAMENTE en el pico de mayor intensidad
-    plt.plot(longitud_pico, amplitud_pico, "rx", markersize=12, markeredgewidth=2, label="Pico máximo")
+    plt.plot(longitud_pico, amplitud_pico, "rx", markersize=12, markeredgewidth=2, label=f"Pico máximo = ({longitud_pico:.1f} \u00b1 {incerteza:.1f}) nm\n")
 
     # Armamos un texto con TODOS los valores para ponerlo en el label (incluyendo el offset)
-    label_calculos = (r"$\lambda_{medido}$ = " f"({longitud_pico:.1f} \u00b1 {incerteza:.1f}) nm\n"
-                      f"Offset = {offset:.1f} nm\n"
-                      f"Ancho de Banda = {ancho_banda:.1f} nm")
-
-    # Línea del ancho de banda
-    plt.hlines(y=mitad_intensidad, xmin=lambda_izq, xmax=lambda_der, color="green", linestyle="--", linewidth=2, label=label_calculos)
-    plt.plot([lambda_izq, lambda_der], [a0[idx_izq], a0[idx_der]], "go")
+    # label_calculos = (r"$\lambda_{medido}$ = " f"({longitud_pico:.1f} \u00b1 {incerteza:.1f}) nm\n"
+                      #f"Δλ (desplazamiento instrumental) = {offset:.1f} nm\n"
+                      #f"Ancho de Banda = {ancho_banda:.1f} nm"
     
-    # --- Línea vertical para el Lambda pedido ---
     if not np.isnan(lambda_pedido):
         plt.axvline(x=lambda_pedido, color="orange", linestyle="-.", linewidth=2, label=r"$\lambda_{pedido}$ = " f"{lambda_pedido:.1f} nm")
+                      
+    plt.plot([], [], ' ', label=f"Δλ (desplazamiento instrumental) = ({offset:.1f} \u00b1 {incerteza:.1f}) nm\n")
+
+    # Línea del ancho de banda
+    #plt.hlines(y=mitad_intensidad, xmin=lambda_izq, xmax=lambda_der, color="green", linestyle="--", linewidth=2, label=label_calculos)
+    #plt.plot([lambda_izq, lambda_der], [a0[idx_izq], a0[idx_der]], "go")
+    
+    # --- Línea vertical para el Lambda pedido ---
+    
 
     plt.ylabel("Amplitud [u.a.]")
     plt.xlabel(r"$\lambda$ [nm]")
