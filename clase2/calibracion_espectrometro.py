@@ -60,7 +60,7 @@ def analizar_espectro(archivo_csv):
 # %%
 
 carpeta_mediciones = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
-# carpeta_mediciones = Path("F:/Juan/UBA/Materias/Física/Laboratorio 5/GitHub/labo5/clase2")
+#carpeta_mediciones = Path("F:/Juan/UBA/Materias/Física/Laboratorio 5/GitHub/labo5/clase2")
 archivos = sorted(carpeta_mediciones.glob("*.csv"))
 
 if not archivos:
@@ -90,10 +90,13 @@ for archivo in archivos:
         lambdas_hallados.append(longitud_pico)
         
         print(f"Pedido: {lambda_pedido} nm | Offset: {offset:.2f} nm | Ancho de banda: {ancho_banda:.2f} nm")
+
+lambdas_pedidos = np.array(lambdas_pedidos)
 lambdas_hallados = np.array(lambdas_hallados)
 anchos_de_banda = np.array(anchos_de_banda)
-print(lambdas_hallados)
-print(anchos_de_banda)
+print(np.array2string(lambdas_pedidos, precision=0, separator=', '))
+print(np.array2string(lambdas_hallados, precision=0, separator=', '))
+print(np.array2string(anchos_de_banda, precision=0, separator=', '))
 # %% 1. Gráfico de Offset
 
 carpeta_destino = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
