@@ -111,13 +111,13 @@ print(f"p-valor método 2: {p_valor_m2:.4e}\n")
 
 fig, (ax, ax_res) = plt.subplots(2, 1, figsize=(8,8), sharex=True, 
                                     gridspec_kw={'height_ratios': [3, 1]})
-ax.errorbar(datos_ev0_m1,nu_m1, yerr=e_nu_m1, fmt="o", label="Datos método 1",color="C0")
-ax.errorbar(datos_ev0_m2,nu_m2, yerr=e_nu_m2, fmt="o", label="Datos método 2",color="C1")
+ax.errorbar(datos_ev0_m1,nu_m1, yerr=e_nu_m1, fmt="o", label="Datos método mínimos",color="C0")
+ax.errorbar(datos_ev0_m2,nu_m2, yerr=e_nu_m2, fmt="o", label="Datos método intensidades",color="C1")
 ax.plot(datos_ev0_m1, y_fit_m1, 
         label=r"$\chi_{\nu}^2$ = "f"{chi_2red_m1:.1f} | P = {p_valor_m1:.1e}", c="C0", alpha=0.8, lw=3)
 ax.plot(datos_ev0_m2, y_fit_m2,
         label=r"$\chi_{\nu}^2$ = "f"{chi_2red_m2:.1f} | P = {p_valor_m2:.1e}", c="C1", alpha=0.8, lw=3)
-ax.set_xlabel(r"e$V_0$ [J]")
+#ax.set_xlabel(r"e$V_0$ [J]")
 ax.set_ylabel(r"$\nu$ [$s^{-1}$]")
 ax.legend()
 ax_res.errorbar(datos_ev0_m1, res_m1, yerr=e_nu_m1, fmt="o", color="C0")

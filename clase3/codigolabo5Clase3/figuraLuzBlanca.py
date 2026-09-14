@@ -29,7 +29,7 @@ ax.set_xlabel("longitud de onda [nm]")
 ax.set_ylabel("Intensidad")
 ax.set_title("Luz Blanca a distintos voltajes")
 ax.legend()
-
+None
 
 #%%
 intencidad = np.array([ 
@@ -38,7 +38,11 @@ intencidad = np.array([
                     trapezoid(df3['I'][:-1],df3['l'][:-1]),
                     trapezoid(df4['I'][:-1],df4['l'][:-1])
                     ])
-
+# calculo la intensidad de cada curva en u.a.
+intencidad = intencidad / intencidad[3]
+for i, valor in enumerate(reversed(intencidad), start=1):
+    print(f"I_{i} = {valor:.2f}")
+# ---------------------
 voltaje = np.array([2,3,4,5])
 fig2, ax2 = plt.subplots()
 ax2.scatter(voltaje, intencidad)
@@ -60,8 +64,8 @@ voltaje = np.array([2,3,4,5])
 fig3, ax3 = plt.subplots()
 ax3.scatter(voltaje, maximos)
 ax3.set_xlabel("voltaje [V]")
-ax3.set_ylabel("Intencidad")
-ax3.set_title(" Ajuste usando maximos")
+ax3.set_ylabel("Intensidad [u.a.]")
+#ax3.set_title(" Ajuste usando maximos") # le saco el titulo xq las figuras van sin titulo en el informe.
 
 def f(x,a,b):
     return a*x +b
