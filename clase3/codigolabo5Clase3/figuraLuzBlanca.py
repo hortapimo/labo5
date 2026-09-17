@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 from scipy.integrate import trapezoid
+from scipy import stats
 
 plt.style.use('./estiloGraficos.mplstyle')
 def load_archiv0(name):
@@ -29,9 +30,19 @@ ax.set_xlabel("longitud de onda [nm]")
 ax.set_ylabel("Intensidad")
 ax.set_title("Luz Blanca a distintos voltajes")
 ax.legend()
+#%% Obtener p valor
+def obtenerP(xdatos,ydatos, yajuste, yerr,cantParmAjuste):
+    residuos_norm = (ydatos - yajuste) / yerr
+    chi2 = np.sum(residuos_norm**2)
+    nu = len(ydatos) - cantParmAjuste
+    chi2_red = chi2 / nu
+    p_valor = stats.chi2.sf(chi2, df=nu)
+    
+    return p_valor, chi2_red
 
 
-#%%
+
+#%chiR =
 intencidad = np.array([ 
                     trapezoid(df['I'][:-1],df['l'][:-1]),
                     trapezoid(df2['I'][:-1],df2['l'][:-1]),
@@ -41,9 +52,9 @@ intencidad = np.array([
 
 voltaje = np.array([2,3,4,5])
 fig2, ax2 = plt.subplots()
-ax2.scatter(voltaje, intencidad)
+ax2.errorbar(voltaje, intencidad,yerr=intencidad*0.01, marker="o",linestyle="")
 ax2.set_xlabel("voltaje [V]")
-ax2.set_ylabel("Intencidad")
+ax2.set_ylabel("Intensidad [%]")
 ax2.set_title(" Ajuste usando integral")
 
 def f(x,a,b):
@@ -51,7 +62,8 @@ def f(x,a,b):
     
 par, pcov = curve_fit(f, voltaje, intencidad)
 x =np.linspace(voltaje[0], voltaje[-1], 50)
-ax2.plot(x,f(x,par[0], par[1]), c="0.2", label=f"Ajuste: {par[0]:.2f} x + {par[1]:.2f} ")
+p_valor, chiR = obtenerP(voltaje, intencidad, f(voltaje,par[0], par[1]), intencidad*0.02, 2)
+ax2.plot(x,f(x,par[0], par[1]), c="0.2", label=f"Ajuste: {par[0]:.2f} x + {par[1]:.2f} \n p-valor = {p_valor:.2f}")
 ax2.legend()
 #%%
 
@@ -70,6 +82,7 @@ par, pcov = curve_fit(f, voltaje, maximos)
 x =np.linspace(voltaje[0], voltaje[-1], 50)
 ax3.plot(x,f(x,par[0], par[1]), c="0.2", label=f"Ajuste: {par[0]:.2f} x + {par[1]:.2f} ")
 ax3.legend()
+
 
 #%%
 
