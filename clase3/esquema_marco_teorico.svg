@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.1316769"
-     inkscape:cx="161.60986"
-     inkscape:cy="458.32462"
+     inkscape:cx="235.26079"
+     inkscape:cy="498.66844"
      inkscape:window-width="1920"
      inkscape:window-height="1048"
      inkscape:window-x="0"
@@ -386,7 +386,7 @@
        transform="translate(24.067101,-7.1436489)"><tspan
          x="49.415577"
          y="160.66513"
-         id="tspan622">A</tspan></text>
+         id="tspan504">A</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.52778px;white-space:pre;inline-size:13.4375;display:inline;fill:#ffffff;fill-opacity:1;stroke:#eb0000;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -396,7 +396,7 @@
        transform="translate(10.874712,-66.606033)"><tspan
          x="49.415577"
          y="160.66513"
-         id="tspan624">E = hν</tspan></text>
+         id="tspan506">E = hν</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;white-space:pre;inline-size:19.5921;display:inline;fill:#ffffff;fill-opacity:1;stroke:#00a835;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -408,19 +408,19 @@
        inkscape:transform-center-y="-36.312724"><tspan
          x="56.15451"
          y="160.66513"
-         id="tspan628"><tspan
+         id="tspan510"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan626">fuerza </tspan></tspan><tspan
+           id="tspan508">fuerza </tspan></tspan><tspan
          x="56.15451"
          y="164.63388"
-         id="tspan632"><tspan
+         id="tspan514"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan630">eléctrica </tspan></tspan><tspan
+           id="tspan512">eléctrica </tspan></tspan><tspan
          x="56.15451"
          y="168.60263"
-         id="tspan636"><tspan
+         id="tspan518"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan634">(frenado)</tspan></tspan></text>
+           id="tspan516">(frenado)</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;white-space:pre;inline-size:37.4563;display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -432,14 +432,14 @@
        inkscape:transform-center-y="-36.312724"><tspan
          x="64.609535"
          y="160.66513"
-         id="tspan640"><tspan
+         id="tspan522"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan638">fuente regulable </tspan></tspan><tspan
+           id="tspan520">fuente regulable </tspan></tspan><tspan
          x="64.609535"
          y="164.63388"
-         id="tspan644"><tspan
+         id="tspan526"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan642">(potencial retardador)</tspan></tspan></text>
+           id="tspan524">(potencial retardador)</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.52778px;white-space:pre;inline-size:25.3462;display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -449,15 +449,15 @@
        transform="translate(-32.75411,-24.565728)"><tspan
          x="57.965149"
          y="160.66513"
-         id="tspan648"><tspan
+         id="tspan530"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan646">Placa emisora
+           id="tspan528">Placa emisora
 </tspan></tspan><tspan
          x="57.965149"
          y="165.07486"
-         id="tspan652"><tspan
+         id="tspan534"><tspan
            style="text-align:center;text-anchor:middle"
-           id="tspan650">(cátodo, +)</tspan></tspan></text>
+           id="tspan532">(cátodo, +)</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.52778px;white-space:pre;inline-size:13.4375;display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -467,7 +467,7 @@
        transform="translate(16.133004,-41.958642)"><tspan
          x="49.415577"
          y="160.66513"
-         id="tspan654">e</tspan></text>
+         id="tspan536">e</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.52778px;white-space:pre;inline-size:6.49866;display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -477,7 +477,7 @@
        transform="translate(5.0605284,-5.9706238)"><tspan
          x="49.415577"
          y="160.66513"
-         id="tspan656">+</tspan></text>
+         id="tspan538">+</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.52777px;fill:#1b1bff;fill-opacity:1;stroke:#000000;stroke-width:0.304001;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -513,5 +513,15 @@
        transform="scale(0.26458333)"
        id="text4336"
        style="fill:#00ff00;stroke-width:3.28818898;text-align:center;white-space:pre;shape-inside:url(#rect4338)" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;white-space:pre;inline-size:6.49866;display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.304;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="49.415577"
+       y="160.66513"
+       id="text10800-9-3"
+       transform="translate(25.659687,-12.41095)"><tspan
+         x="49.415577"
+         y="160.66513"
+         id="tspan540">+</tspan></text>
   </g>
 </svg>
