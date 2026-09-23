@@ -5,26 +5,29 @@ import pandas as pd
 plt.style.use('./estiloGraficos.mplstyle')
 
 def load_archiv0(name):
-    df = pd.read_csv(name, skiprows=1)
-    df.columns = ['V', 'Ix','Iy','r']
-    df['V'] = pd.to_numeric(df['V'], errors='coerce')
+    df = pd.read_csv(name, skiprows=53)
+    df.columns = ['I', 'l']
+    df['I'] = pd.to_numeric(df['I'], errors='coerce')
     return df
 
 
-sinColimador=load_archiv0("barridoFinal_435nm_5V.txt")
-aux=load_archiv0("barrido_420nm_5V_bien.txt")
-apertura1=load_archiv0("barridoFinal_435nm_5V_colimado.txt")
-apertura2=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura2.txt")
-apertura3=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura3.txt")
-apertura4=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura5.txt")#Este quedo con n=5 por error, deberia decir 4
-tapando=load_archiv0('barridoFinal_435nm_5V_tapando.txt')
+# sinColimador=load_archiv0("barridoFinal_540nm_5V.txt")
+# aux=load_archiv0("barrido_420nm_5V_bien.txt")
+# apertura1=load_archiv0("barridoFinal_435nm_5V_colimado.txt")
+# apertura2=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura2.txt")
+# apertura3=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura3.txt")
+# apertura4=load_archiv0("barridoFinal_435nm_5V_colimado_Apertura5.txt")#Este quedo con n=5 por error, deberia decir 4
+tapando2=load_archiv0('luzBlanca2V.csv')
+tapando3=load_archiv0('luzBlanca3V.csv')
+tapando4=load_archiv0('luzBlanca4V.csv')
+tapando5=load_archiv0('luzBlanca5V.csv')
 
 #%% PAra ver el archivo
 def graficar(*tuplasXY,**karg):
     fig, ax = plt.subplots()
     
     for (x,y,label) in tuplasXY:
-        ax.scatter(x,y,label=label)
+        ax.scatter(x,y,label=label, marker=".")
     
     try:
         ax.set_xlabel(karg["xlabel"])
@@ -32,9 +35,15 @@ def graficar(*tuplasXY,**karg):
     except: pass  
  
     ax.legend()
+    return fig,ax
     
-graficar((tapando['V'],tapando['Ix'],"ruido"),xlabel="V", ylabel="I[A]")
-graficar((apertura2['V'],apertura2['Ix'],"apertura 2"),xlabel="V", ylabel="I[A]")
+fig,ax = graficar((tapando2['I'],tapando2['l'],"2V"),
+                  (tapando3['I'],tapando3['l'],"3V"),
+                  (tapando4['I'],tapando4['l'],"4V"),
+                  (tapando5['I'],tapando5['l'],"5V"),
+                  xlabel="l [nm]", ylabel="Intencidad")
+#ax.axhline(y=0,color='red', linestyle='--', linewidth=1.5, label='Cero')
+#graficar((apertura2['V'],apertura2['Ix'],"apertura 2"),xlabel="V", ylabel="I[A]")
 # graficar((apertura3['V'],apertura3['Ix'],"apertura 3"),xlabel="V", ylabel="I[A]")
 # graficar((apertura4['V'],apertura4['Ix'],"apertura 4"),xlabel="V", ylabel="I[A]")
 

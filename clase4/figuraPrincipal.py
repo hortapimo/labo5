@@ -155,3 +155,6 @@ graficar((sinColimador["V"],sinColimador["Ix"],"Sin colimar - Referencia", "."),
          xlabel="voltaje [V]", ylabel="I [A]")
 
 #%%
+
+for i in range(20):
+    

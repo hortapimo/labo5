@@ -118,7 +118,7 @@ def analizar_espectro(archivo_csv, carpeta_destino):
     plt.close()
 
 # %%
-carpeta_mediciones = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
+carpeta_mediciones = Path("")
 carpeta_destino = Path("/home/juan_cruz/Documentos/Mi_git/labo5/clase2")
 
 archivos = sorted(carpeta_mediciones.glob("*.csv"))
