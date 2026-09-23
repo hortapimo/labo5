@@ -89,4 +89,4 @@ def eliminar_archivos_sin_decaimientos(carpeta_datos):
     print(f"Archivos eliminados (sin decaimientos): {archivos_eliminados}")
 
 # Ejecutar el script apuntando a tu carpeta actual (reemplazar "." por tu ruta si es necesario)
-eliminar_archivos_sin_decaimientos("/home/juan_cruz/Descargas/Datos")
+eliminar_archivos_sin_decaimientos("")

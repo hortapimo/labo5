@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 # --- Cargar estilo de gráficos ---
-plt.style.use('/home/juan_cruz/Documentos/Mi_git/labo5/clase2/estiloGraficos.mplstyle')
+plt.style.use('estiloGraficos.mplstyle')
 # ---------------------------------  
 
 #%%
