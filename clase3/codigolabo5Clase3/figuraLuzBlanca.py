@@ -19,16 +19,17 @@ df2=load_archiv0("luzBlanca3v.csv")
 df3=load_archiv0("luzBlanca4v.csv")
 df4=load_archiv0("luzBlanca5v.csv")
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(10,6))
 ax.scatter(df['l'],df['I'], label = "2V", s=1)
 ax.scatter(df2['l'],df2['I'], label = "3V",s=1)
 ax.scatter(df3['l'],df3['I'], label = "4V",s=1)
 ax.scatter(df4['l'],df4['I'], label = "5V",s=1)
 
-ax.set_xlabel("longitud de onda [nm]")
-ax.set_ylabel("Intensidad")
-ax.set_title("Luz Blanca a distintos voltajes")
-ax.legend()
+ax.set_xlabel(r"$\lambda$ [nm]")
+ax.set_ylabel("Intensidad [u.a.]")
+#ax.set_title("Luz Blanca a distintos voltajes")
+ax.legend(fontsize=20)
+fig.savefig("EspectrosLedDistintasIntensidades.png")
 None
 
 #%%
