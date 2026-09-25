@@ -6,7 +6,7 @@ from scipy.optimize import minimize # algoritmo que realiza la minimización
 N_datos = 570
 tau_real = 2196.981 # ns
 l_real = 1 / tau_real # ns-1
-min_m, max_m = 50, 1450 # ns, intervalo de truncado
+min_m, max_m = 50, 1700 # ns, intervalo de truncado
 b_estandarizado = (max_m - min_m) / tau_real # parámetro que toma la función que me
 # genera los datos de la exponencial
 rng = np.random.default_rng(42) # rng se define una sola vez por fuera para que
@@ -149,7 +149,8 @@ ax_exceso.set_ylabel(r"Exceso")
 ax_exceso.tick_params(axis='x', labelsize=12)
 ax_exceso.tick_params(axis='y', labelsize=12)
 ax_exceso.minorticks_on()
-fig.savefig("SimulacionMuones.png")
+fig.tight_layout()
+fig.savefig("SimulacionMuonesAuxiliar.png")
 fig.show()
 
 
