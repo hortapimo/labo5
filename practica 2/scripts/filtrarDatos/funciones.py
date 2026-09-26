@@ -34,14 +34,19 @@ def cargarArchivo(archivo: Path | str, puntos_por_bloque: int = 1024) -> pd.Data
         return pd.DataFrame(columns=columnas)
 
 
-def hay_decaimiento(dataframe: pd.DataFrame, umbral = -90.0, tiempo_trigger =210.0, tiempo_minimo=50.0) -> bool:
+def hay_decaimiento(dataframe: pd.DataFrame, umbral = -90.0, umbralSup=100, tiempo_trigger =210.0, tiempo_minimo=50.0) -> bool:
 
     mascara2 = dataframe["canal 2 [mV]"] < umbral
+    mascara2Sup = dataframe["canal 2 [mV]"] > umbralSup
     mascara3 = dataframe["canal 3 [mV]"] < umbral
+    mascara3Sup = dataframe["canal 3 [mV]"] > umbralSup
+    mascara1Sup = dataframe["canal 1 [mV]"] > umbralSup
 
     if (not mascara2.any()) and (not mascara3.any()) :
-        return False
-
+        return False #descarta si no hay decaimiento
+    if (mascara2Sup.any()) or (mascara3Sup.any()) or (mascara1Sup.any()) :
+        return False #descarta si hay señal ruidosa
+    
     tiempos_evento2 = dataframe.loc[mascara2, "tiempo [ns]"]
     tiempos_evento3 = dataframe.loc[mascara3, "tiempo [ns]"]
     dif2 = tiempos_evento2 - tiempo_trigger
