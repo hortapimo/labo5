@@ -1,48 +1,53 @@
 from pathlib import Path
 import pandas as pd
 
-def cargarArchivo(archivo: Path | str, num_bloques: int = 81, puntos_por_bloque: int = 1024) -> list[pd.DataFrame]:
+def cargarArchivo(archivo: Path | str, puntos_por_bloque: int = 1024) -> pd.DataFrame:
     columnas = ["tiempo [ns]", "canal 1 [mV]", "canal 2 [mV]", "canal 3 [mV]"]
     dataframes = []
 
-    with open(archivo, "r", encoding="utf-8", errors="replace") as f:
-        # Saltear el header global inicial (primeras 4 líneas)
-        for _ in range(4):
-            f.readline()
+    # Se usa la variable 'archivo' que viene por parámetro
+    with open(archivo, 'r', encoding='utf-8') as f:
+        while True:
+            linea = f.readline()
+            
+            if not linea:
+                break
+                
+            if linea.startswith("Event"):
+                df_bloque = pd.read_csv(
+                    f,
+                    nrows=puntos_por_bloque,
+                    sep=r"\s+",
+                    header=None,
+                    names=columnas,
+                    engine="python"
+                )
+                dataframes.append(df_bloque)
+            
+    # Validación de seguridad por si el archivo estaba vacío o no tenía eventos
+    if dataframes:
+        print(f"Se cargaron {len(dataframes)} bloques en total.")
+        return dataframes
+    else:
+        print(f"No se encontró ningún 'Evento' en el archivo {archivo}.")
+        # Retorna un DataFrame vacío con las columnas para evitar errores más adelante
+        return pd.DataFrame(columns=columnas)
 
-        for i in range(num_bloques):
-            df_bloque = pd.read_csv(
-                f,
-                nrows=puntos_por_bloque,
-                sep=r"\s+",
-                header=None,
-                names=columnas,
-                engine="python"
-            )
-            dataframes.append(df_bloque)
 
-            # Consumir la línea en blanco y los 2 headers entre bloques
-            if i < num_bloques - 1:
-                for _ in range(3):
-                    f.readline()
+def hay_decaimiento(dataframe: pd.DataFrame, umbral = -90.0, tiempo_trigger =210.0, tiempo_minimo=50.0) -> bool:
 
-    return dataframes
+    mascara2 = dataframe["canal 2 [mV]"] < umbral
+    mascara3 = dataframe["canal 3 [mV]"] < umbral
 
-
-def hay_decaimiento(dataframe: pd.DataFrame) -> bool:
-    umbral = -90.0
-    tiempo_trigger = 220.0
-    tiempo_minimo = 50.0
-
-    mascara = dataframe["canal 3 [mV]"] < umbral
-
-    if not mascara.any():
+    if (not mascara2.any()) and (not mascara3.any()) :
         return False
 
-    tiempos_evento = dataframe.loc[mascara, "tiempo [ns]"]
-    dif = tiempos_evento - tiempo_trigger
+    tiempos_evento2 = dataframe.loc[mascara2, "tiempo [ns]"]
+    tiempos_evento3 = dataframe.loc[mascara3, "tiempo [ns]"]
+    dif2 = tiempos_evento2 - tiempo_trigger
+    dif3 = tiempos_evento3 - tiempo_trigger
 
-    return bool((dif > tiempo_minimo).any())
+    return bool((dif2 > tiempo_minimo).any() or (dif3 > tiempo_minimo).any() )
 
 def abrir_parquet(ruta_archivo: Path | str, motor: str = "auto") -> pd.DataFrame:
     """
