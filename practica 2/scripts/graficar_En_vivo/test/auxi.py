@@ -28,4 +28,4 @@ def cargarArchivo(archivo, num_bloques=81, puntos_por_bloque=1024):
     # Retornamos la lista de DataFrames vivos en RAM
     return dataframes
 
-cargarArchivo("run_20260911_131544_idx0_selected.txt")
+cargarArchivo("run_20260918_135753_idx1000_selected.txt.txt")

@@ -14,6 +14,7 @@ def cargarArchivo(archivo: Path | str, puntos_por_bloque: int = 1024) -> pd.Data
                 break
                 
             if linea.startswith("Event"):
+                f.readline()
                 df_bloque = pd.read_csv(
                     f,
                     nrows=puntos_por_bloque,
@@ -31,11 +32,11 @@ def cargarArchivo(archivo: Path | str, puntos_por_bloque: int = 1024) -> pd.Data
     else:
         print(f"No se encontró ningún 'Evento' en el archivo {archivo}.")
         # Retorna un DataFrame vacío con las columnas para evitar errores más adelante
-        return pd.DataFrame(columns=columnas)
+        return dataframes
 
 
 def hay_decaimiento(dataframe: pd.DataFrame, umbral = -90.0, umbralSup=100, tiempo_trigger =210.0, tiempo_minimo=50.0) -> bool:
-
+    
     mascara2 = dataframe["canal 2 [mV]"] < umbral
     mascara2Sup = dataframe["canal 2 [mV]"] > umbralSup
     mascara3 = dataframe["canal 3 [mV]"] < umbral

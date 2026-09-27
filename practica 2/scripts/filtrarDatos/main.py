@@ -3,7 +3,7 @@ import pandas as pd
 import funciones as misf
 
 
-carpeta_datos = Path("Datos4/")
+carpeta_datos = Path("Datos1raYsegundaSemana/")
 archivos_txt = list(carpeta_datos.glob("*.txt"))
 
 n_decaimiento = 1
@@ -15,13 +15,14 @@ for archivo in archivos_txt:
     print(f"Procesando {archivo.name}, archivo {i} de {nArchivos}")
     i+=1
     dataframes = misf.cargarArchivo(archivo) 
-    for df in dataframes:
-        if misf.hay_decaimiento(df):
-            # .copy() previene warnings de SettingWithCopyWarning de pandas
-            df_filtrado = df.copy()
-            df_filtrado["#decaimiento"] = n_decaimiento
-            lista_dataframes.append(df_filtrado)
-            n_decaimiento += 1
+    if dataframes: #Verifica que la lista no este vacia
+        for df in dataframes:
+            if misf.hay_decaimiento(df):
+                df_filtrado = df.copy()
+                df_filtrado["#decaimiento"] = n_decaimiento
+                lista_dataframes.append(df_filtrado)
+                n_decaimiento += 1
+                
 
 if lista_dataframes:
     df_total = pd.concat(lista_dataframes, ignore_index=True)
