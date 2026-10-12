@@ -32,16 +32,16 @@ def cargarArchivo(archivo: Path | str, num_bloques: int = 81, puntos_por_bloque:
 
     return dataframes
 
-archivo = "run_20260925_105124_idx0_selected.txt"
-archivo2 = "run_20260925_105451_idx11_selected.txt"
-archivo3 = "run_20260925_113849_idx1_selected.txt"
-archivo4 = "run_20260925_115320_idx0_selected.txt"
-archivo5 = "run_20260925_120111_idx0_selected.txt"
-archivo6 = "run_20260925_130253_idx0_selected.txt"
-archivo7 = "run_20260925_132914_idx0_selected.txt"
+archivo = "/home/juan_cruz/Documentos/Mi_git/labo5/practica 2/scripts/filtrarDatos/medicionEficienciaOrden123/run_20260918_124020_idx0_selected.txt"
+#archivo2 = "run_20260925_105451_idx11_selected.txt"
+#archivo3 = "run_20260925_113849_idx1_selected.txt"
+#archivo4 = "run_20260925_115320_idx0_selected.txt"
+#archivo5 = "run_20260925_120111_idx0_selected.txt"
+#archivo6 = "run_20260925_130253_idx0_selected.txt"
+#archivo7 = "run_20260925_132914_idx0_selected.txt"
 
-dataframes = misf.cargarArchivo(archivo7) 
-num = 11
+dataframes = misf.cargarArchivo(archivo) 
+num = 0
 df=dataframes[num]
 
 # 3. Crear y configurar la figura

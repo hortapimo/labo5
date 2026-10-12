@@ -21,6 +21,7 @@ misf.obtenerInfoDataframe(df)
 # fig,ax=plt.subplots()
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 1 [mV]"], label="canal 1")
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 2 [mV]"], label="canal 2")
+
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 3 [mV]"], label="canal 3")
 # ax.legend()
 #%%
