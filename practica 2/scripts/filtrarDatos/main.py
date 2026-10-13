@@ -3,7 +3,7 @@ import pandas as pd
 import funciones as misf
 
 
-carpeta_datos = Path("Datos1raYsegundaSemana/")
+carpeta_datos = Path("Datos4taSemana/")
 archivos_txt = list(carpeta_datos.glob("*.txt"))
 
 n_decaimiento = 1
