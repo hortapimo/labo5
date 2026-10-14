@@ -7,24 +7,23 @@ plt.ioff()
 from pathlib import Path
 import pandas as pd
 import funciones as misf
-nombre="decaimientos_cent3.parquet"
+nombre="/home/juan_cruz/Documentos/Mi_git/labo5/practica 2/scripts/filtrarDatos/muones_cent1.parquet"
 plt.style.use('estiloGraficos.mplstyle')
 
 df=misf.abrir_parquet(nombre)
 
-df.to_csv("decaimientos.txt", sep='\t', index=False) # con esto lo guardo en un txt tmb, no hace falta que lo usemos igual.
-
 misf.obtenerInfoDataframe(df)
 #%%
 # ndecaimiento=2
+
 # medicion =df[df["#decaimiento"] == ndecaimiento]
+
 # fig,ax=plt.subplots()
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 1 [mV]"], label="canal 1")
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 2 [mV]"], label="canal 2")
 
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 3 [mV]"], label="canal 3")
 # ax.legend()
-# fig.show()
 #%%
 
 nDecaimiento = df["#decaimiento"].nunique()
@@ -36,6 +35,7 @@ if (nDecaimiento%nAxis ==0):
         nFiguras=nDecaimiento//nAxis
 else:
     nFiguras=nDecaimiento//nAxis + 1
+
 
 for i in range(nFiguras):
     print(f"procesando figura {i+1}")
@@ -58,4 +58,4 @@ for i in range(nFiguras):
     fig.tight_layout()
     fig.savefig(f"Decaimientos{i*nAxis+1}-{((i+1)*nAxis)}")  
     plt.close(fig)
-
+    
