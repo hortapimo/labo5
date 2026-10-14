@@ -1,141 +1,70 @@
 import funciones as misf
 import matplotlib.pyplot as plt
 import pandas as pd
+#%%
+"""
+redefino esta funcion de funciones.py para que no tenga que tener una columna decaimientos
+"""
+
+def obtenerInfoDataframe(df):
+    total_filas = len(df)
+    cant_muones = df["id_muon"].max()
+    print("\n" + "=" * 40)
+    print("RESUMEN DE DATOS CARGADOS")
+    print("=" * 40)
+    print(f"Total de filas: {total_filas}")
+    print("\nColumnas presentes y tipos:")
+    print(df.dtypes)
+    print(f"cantidad de muones detectados: {cant_muones}")
+ #%%
+"""
+obtengo data de los parquets de pasos de muones
+"""
 
 plt.style.use('estiloGraficos.mplstyle')
 
-dfTest = misf.abrir_parquet("decaimientos.parquet", motor ="pyarrow")
-misf.obtenerInfoDataframe(dfTest)
-                            
-#%%
+df1 = misf.abrir_parquet("muones_cent1.parquet", motor ="pyarrow")
+obtenerInfoDataframe(df1)
 
-umbral = -50.0
-umbralSup = 100 
-tiempo_trigger = 210.0
-tiempo_minimo = 50.0
+df2 = misf.abrir_parquet("muones_cent2.parquet", motor ="pyarrow")
+obtenerInfoDataframe(df2)
 
-def hayEventoTriple(dataframe: pd.DataFrame) -> bool:
-    
-    mascara2 = dataframe["canal 2 [mV]"] < umbral
-    mascara2Sup = dataframe["canal 2 [mV]"] > umbralSup
-    mascara3 = dataframe["canal 3 [mV]"] < umbral
-    mascara3Sup = dataframe["canal 3 [mV]"] > umbralSup
-    mascara1Sup = dataframe["canal 1 [mV]"] > umbralSup
-
-    if (not mascara2.any()) and (not mascara3.any()) :
-        return False #descarta si no hay decaimiento
-    if (mascara2Sup.any()) or (mascara3Sup.any()) or (mascara1Sup.any()) :
-        return False #descarta si hay señal ruidosa
-    
-    tiempos_evento2 = dataframe.loc[mascara2, "tiempo [ns]"]
-    tiempos_evento3 = dataframe.loc[mascara3, "tiempo [ns]"]
-    dif2 = tiempos_evento2 - tiempo_trigger
-    dif3 = tiempos_evento3 - tiempo_trigger
- 
-    return bool ( (dif2 > tiempo_minimo).any() and (dif3 > tiempo_minimo).any() )
-
-def hayEventoDoble(dataframe: pd.DataFrame) -> bool:
-    
-    mascara2Sup = dataframe["canal 2 [mV]"] > umbralSup
-    mascara3 = dataframe["canal 3 [mV]"] < umbral
-    mascara3Sup = dataframe["canal 3 [mV]"] > umbralSup
-    mascara1Sup = dataframe["canal 1 [mV]"] > umbralSup
-
-    if not mascara3.any():
-        return False #descarta si no hay decaimiento
-    if (mascara2Sup.any()) or (mascara3Sup.any()) or (mascara1Sup.any()) :
-        return False #descarta si hay señal ruidosa
-    
-    tiempos_evento3 = dataframe.loc[mascara3, "tiempo [ns]"]
-    dif3 = tiempos_evento3 - tiempo_trigger
-
-    return bool ( (dif3 > tiempo_minimo).any() )
+df3 = misf.abrir_parquet("muones_cent3.parquet", motor ="pyarrow")
+obtenerInfoDataframe(df3)
 
 #%%
-"""
-acá calcula la eficiencia del centelleador 2, que es la que usamos en la mayoría de mediciones
-"""
-eDobles, eTriples , eDescartados= 0, 0, 0 
-
-# eficiencia de centelleador 2
-decaimientosTotales = dfTest['#decaimiento'].unique()
-print(f"\nCentelleador 2 ----------------------------------------\nDecaimientos totales: {len(decaimientosTotales)}")
-
-for n in decaimientosTotales:
-    nDecaimiento = dfTest[dfTest["#decaimiento"] == n]
-    if hayEventoDoble(nDecaimiento):
-        if hayEventoTriple(nDecaimiento):
-            eTriples += 1
+def calcularEficiencia(dataframe: pd.DataFrame, 
+                       umbral: float = -105.0,) -> float:
+    
+    eDobles, eTriples, eUnicos = 0, 0, 0
+    cantMuones = dataframe["id_muon"].unique()
+    
+    # veo si hay eventos dobles o triples
+    for i in cantMuones:
+        df_muon = dataframe[dataframe["id_muon"] == i]
+        # detecta si hay algun valor de la columna dada que cumple ser menor al trigger
+        deteccionCanal1 = df_muon["canal 1 [mV]"] < umbral
+        deteccionCanal2 = df_muon["canal 2 [mV]"] < umbral
+        deteccionCanal3 = df_muon["canal 3 [mV]"] < umbral
+        if ( deteccionCanal1.any() and deteccionCanal2.any() and deteccionCanal3.any() ) :
+            eTriples = eTriples + 1
+            continue
+        if ( deteccionCanal1.any()) and (deteccionCanal3.any() ) :
+            eDobles = eDobles + 1
             continue
         else:
-            eDobles += 1
-    else:
-        eDescartados += 1
-            
-try:
-    eficiencia2 = (eTriples)/(eDobles + eTriples)
-    print(f"Eventos dobles: {eDobles}\nEventos triples: {eTriples}\nEventos descartados: {eDescartados}\nEficiencia: {eficiencia2}")
-except ZeroDivisionError:
-    print("\nNo se puede dividir por cero.")
-    
-# %%
+            eUnicos = eUnicos + 1
+        
+    # calculo eficiencia
+    try:
+        eficiencia = (eTriples)/(eDobles + eTriples)
+        print(f"\nEventos dobles: {eDobles}\nEventos triples: {eTriples}\nEficiencia: {eficiencia}")
+        return eficiencia
+    except ZeroDivisionError:
+        print("\nNo se puede dividir por cero.")
+        return 0
+#%%
 
-df1 = misf.abrir_parquet("decaimientosCentelleador1.parquet", motor ="pyarrow")
-misf.obtenerInfoDataframe(df1)
-"""
-acá calcula la eficiencia del centelleador 1
-"""
-eDobles, eTriples , eDescartados= 0, 0, 0 
-
-# eficiencia de centelleador 2
-decaimientosTotales = df1['#decaimiento'].unique()
-print(f"\nCentelleador 1 ----------------------------------------\nDecaimientos totales: {len(decaimientosTotales)}")
-
-for n in decaimientosTotales:
-    nDecaimiento = df1[df1["#decaimiento"] == n]
-    if hayEventoDoble(nDecaimiento):
-        if hayEventoTriple(nDecaimiento):
-            eTriples += 1
-            continue
-        else:
-            eDobles += 1
-    else:
-        eDescartados += 1
-            
-try:
-    eficiencia2 = (eTriples)/(eDobles + eTriples)
-    print(f"Eventos dobles: {eDobles}\nEventos triples: {eTriples}\nEventos descartados: {eDescartados}\nEficiencia: {eficiencia2}")
-except ZeroDivisionError:
-    print("\nNo se puede dividir por cero.")
-    
-# %%
-
-df3 = misf.abrir_parquet("decaimientosCentelleador3.parquet", motor ="pyarrow")
-misf.obtenerInfoDataframe(df3)
-"""
-acá calcula la eficiencia del centelleador 3
-"""
-eDobles, eTriples , eDescartados= 0, 0, 0 
-
-# eficiencia de centelleador 2
-decaimientosTotales = df3['#decaimiento'].unique()
-print(f"\nCentelleador 3 ----------------------------------------\nDecaimientos totales: {len(decaimientosTotales)}")
-
-for n in decaimientosTotales:
-    nDecaimiento = df3[df3["#decaimiento"] == n]
-    if hayEventoDoble(nDecaimiento):
-        if hayEventoTriple(nDecaimiento):
-            eTriples += 1
-            continue
-        else:
-            eDobles += 1
-    else:
-        eDescartados += 1
-            
-try:
-    eficiencia2 = (eTriples)/(eDobles + eTriples)
-    print(f"Eventos dobles: {eDobles}\nEventos triples: {eTriples}\nEventos descartados: {eDescartados}\nEficiencia: {eficiencia2}")
-except ZeroDivisionError:
-    print("\nNo se puede dividir por cero.")
-    
-# %%
+efi_orden1 = calcularEficiencia(df1)
+efi_orden2 = calcularEficiencia(df2)
+efi_orden3 = calcularEficiencia(df3)

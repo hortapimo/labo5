@@ -7,7 +7,7 @@ plt.ioff()
 from pathlib import Path
 import pandas as pd
 import funciones as misf
-nombre="run_20261002_131216_idx2_selected_filtrado.parquet"
+nombre="decaimientos_cent3.parquet"
 plt.style.use('estiloGraficos.mplstyle')
 
 df=misf.abrir_parquet(nombre)
