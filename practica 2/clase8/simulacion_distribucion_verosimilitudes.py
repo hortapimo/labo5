@@ -2,14 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import truncexpon#, norm # exponencial truncada, normal
 from scipy.special import xlogy
-
-#def nll_poisson(params, n_obs, bordes, f_modelo):# defino la verosimilitud de poisson bineada
-#    # Calculamos los nu_i teóricos pasándole los parámetros de la función a elegir
-#    nu_i = f_modelo(params, bordes)
-#    nu_i = np.maximum(nu_i, 1e-10)# con esto evito que durante la minimización se
-#    # evalúe "log(0)" en un nu_i
-#    log_L_i = n_obs * np.log(nu_i) - nu_i
-#    return -2 * np.sum(log_L_i)
 #%%
 N_datos = 2000
 tau_real = 2196.981 # ns
