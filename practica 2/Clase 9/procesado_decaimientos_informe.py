@@ -223,7 +223,7 @@ ax1.hist(x_medido, bins = bin_edges, edgecolor='black', alpha=0.9)
 ax1.errorbar(centros_bines,n_obs, yerr=errores_cuentas, fmt='.', color='black', label="Datos")
 ax1.plot(x_fit,pdf_fit * factor_escala,lw=3,alpha=0.8, label="Ajuste")
 ax1.plot([],[], " ", label=r"$\hat{\tau}$ = "f"({tau_fit:.0f} ± {error_tau:.0f} ns)")
-ax1.plot([],[], " ", label=r"$\hat{N^{fit}}$ = "f"{N_fit:.0f} ± {error_N:.0f}")
+ax1.plot([],[], " ", label=r"$\hat{N_{fit}}$ = "f"{N_fit:.0f} ± {error_N:.0f}")
 ax1.set_xlabel("$\Delta t$ [ns]")
 ax1.set_ylabel("Cuentas")
 ax1.legend()
@@ -231,9 +231,6 @@ ax1.grid(False)
 fig1.tight_layout()
 fig1.savefig("decaimientos_ajustados_todos_recortados.png")
 fig1.show()
-
-
-
 #%%
 # ahora queremos testear la bondad del ajuste, para lo cual hacemos simulaciones.
 N_datos = len(x_medido)
@@ -315,7 +312,7 @@ ax.set_xlim(4,66)
 ax.set_ylim(0,0.056)
 ax.tick_params(axis='y', labelsize=12)
 ax.minorticks_on()
-ax.legend()#(fontsize=12)
+ax.legend()
 ax.grid(False)
 fig.tight_layout()
 fig.savefig("pvalor_verosimilitud_todos_recortados_opcion2.png")
