@@ -7,7 +7,7 @@ from scipy.stats import truncexpon # exponencial truncada
 from scipy.optimize import minimize # algoritmo que realiza la minimización
 from scipy.special import xlogy
 from scipy.stats import rv_histogram
-plt.style.use('estiloGraficos.mplstyle')
+plt.style.use('estiloGraficos2hist.mplstyle')
 #%%
 def extraer_delta_t(df):
     df =df.reset_index(drop=True)
@@ -211,6 +211,8 @@ error_N, error_lam = np.sqrt(np.diag(m_cov_s))
 tau_fit = 1 / lam_fit
 error_tau = error_lam / (lam_fit**2)
 
+print(r"$\hat{\tau}$ = "f"({tau_fit:.0f} ± {error_tau:.0f} ns)")
+print(r"$\hat{N_{fit}}$ = "f"{N_fit:.0f} ± {error_N:.0f}")
 x_fit = np.linspace(min_m, max_m, 500)
 pdf_fit = truncexpon.pdf(x_fit, b = (max_m - min_m) / tau_fit, loc=min_m, scale=tau_fit)
 anchos_bines = np.diff(bin_edges)
@@ -222,14 +224,15 @@ fig1, ax1 = plt.subplots(figsize = (8,6))
 ax1.hist(x_medido, bins = bin_edges, edgecolor='black', alpha=0.9)
 ax1.errorbar(centros_bines,n_obs, yerr=errores_cuentas, fmt='.', color='black', label="Datos")
 ax1.plot(x_fit,pdf_fit * factor_escala,lw=3,alpha=0.8, label="Ajuste")
-ax1.plot([],[], " ", label=r"$\hat{\tau}$ = "f"({tau_fit:.0f} ± {error_tau:.0f} ns)")
-ax1.plot([],[], " ", label=r"$\hat{N_{fit}}$ = "f"{N_fit:.0f} ± {error_N:.0f}")
+ax1.plot([],[], " ", label=r"$\hat{\tau}$ = (2000 ± 300) ns")
+ax1.plot([],[], " ", label=r"$\hat{N_{fit}}$ = 1620 ± 40")
 ax1.set_xlabel("$\Delta t$ [ns]")
 ax1.set_ylabel("Cuentas")
+ax1.set_xlim(50,1550)
+ax1.set_ylim(0,90)
 ax1.legend()
-ax1.grid(False)
 fig1.tight_layout()
-fig1.savefig("decaimientos_ajustados_todos_recortados.png")
+fig1.savefig("decaimientos_ajustados_todos_recortados_informe.png")
 fig1.show()
 #%%
 # ahora queremos testear la bondad del ajuste, para lo cual hacemos simulaciones.
@@ -319,13 +322,14 @@ fig.savefig("pvalor_verosimilitud_todos_recortados_opcion2.png")
 fig.show()
 #%%
 logl_obtenidos1 = np.array(logl_obtenidos)
+logl_recorte = logl_obtenidos1[logl_obtenidos1 > logl_medido]
 plt.rc("font", size=16)
 fig, ax = plt.subplots(figsize=(7, 6))
 alturas, bins, _ = ax.hist(logl_obtenidos1, bins=100,density=True,
                            alpha=0.6, color="C1", label="Distribución simulada")
-mascara = bins[1:] > logl_medido
-ax.hist(bins[:-1][mascara], bins=bins, weights=alturas[mascara],
-        alpha=0.8, color="C1")
+pesos = np.ones_like(logl_recorte) / (len(logl_obtenidos1) * np.diff(bins)[0])
+ax.hist(logl_recorte, bins=bins, weights=pesos,
+        alpha=0.8, color="C1", hatch='//',label="Área integrada")
 ax.axvline(logl_medido, color="black", ls="--", label=r"$\mathscr{L}_{obs}$ = "f"{logl_medido:.0f}")
 ax.plot([],[]," ", label=f"P valor = {p_val:.2f}")
 ax.set_xlabel(r"$\mathscr{L}$ [u.a.]")
@@ -337,5 +341,5 @@ ax.minorticks_on()
 ax.legend()#(fontsize=12)
 ax.grid(False)
 fig.tight_layout()
-fig.savefig("pvalor_verosimilitud_todos_recortados_opcion3.png")
+fig.savefig("pvalor_verosimilitud_todos_recortados_opcion3_informe.png")
 fig.show()
