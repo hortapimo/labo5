@@ -39,8 +39,8 @@ archivo4 = "run_20260925_115320_idx0_selected.txt"
 archivo5 = "run_20260925_120111_idx0_selected.txt"
 archivo6 = "run_20260925_130253_idx0_selected.txt"
 archivo7 = "run_20260925_132914_idx0_selected.txt"
-
-dataframes = misf.cargarArchivo(archivo7) 
+archivo_frec2 = "run_20261002_132630_idx0_selected.txt"
+dataframes = misf.cargarArchivo(archivo_frec2) 
 num = 11
 df=dataframes[num]
 
