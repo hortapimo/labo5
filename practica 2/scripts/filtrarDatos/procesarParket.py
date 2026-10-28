@@ -7,7 +7,7 @@ plt.ioff()
 from pathlib import Path
 import pandas as pd
 import funciones as misf
-nombre="run_20261002_131216_idx2_selected_filtrado.parquet"
+nombre="/home/juan_cruz/Documentos/Mi_git/labo5/practica 2/scripts/filtrarDatos/muones_cent1.parquet"
 plt.style.use('estiloGraficos.mplstyle')
 
 df=misf.abrir_parquet(nombre)
@@ -21,6 +21,7 @@ misf.obtenerInfoDataframe(df)
 # fig,ax=plt.subplots()
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 1 [mV]"], label="canal 1")
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 2 [mV]"], label="canal 2")
+
 # ax.scatter(medicion["tiempo [ns]"], medicion["canal 3 [mV]"], label="canal 3")
 # ax.legend()
 #%%

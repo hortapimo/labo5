@@ -1,0 +1,273 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scipy.signal import find_peaks
+import funciones as misf
+from scipy.stats import truncexpon # exponencial truncada
+from scipy.optimize import minimize # algoritmo que realiza la minimización
+from scipy.special import xlogy
+from scipy.stats import rv_histogram
+
+plt.style.use('estiloGraficos.mplstyle')
+
+#%%
+def extraer_delta_t(df):
+    resultados = {}
+    df =df.reset_index(drop=True)
+    columnas_interes = ["canal 1 [mV]", "canal 2 [mV]", "canal 3 [mV]"]
+    indices_pico_canal_1,_ = find_peaks(-df["canal 1 [mV]"], prominence=1, distance=len(df["canal 1 [mV]"]/2))
+    # Si el canal 1 no tuvo pico, no podemos calcular la resta
+    if len(indices_pico_canal_1) == 0:
+        return None, None
+
+    indices_pico_canal_2,_ = find_peaks(-df["canal 2 [mV]"][indices_pico_canal_1[0]+30:], prominence=1,distance=len(df["canal 2 [mV]"][indices_pico_canal_1[0]+30:]))
+    indices_pico_canal_3,_ = find_peaks(-df["canal 3 [mV]"][indices_pico_canal_1[0]+30:], prominence=1,distance=len(df["canal 2 [mV]"][indices_pico_canal_1[0]+30:]))
+    
+    t1=df["tiempo [ns]"][indices_pico_canal_1]
+    if len(indices_pico_canal_2) > 0:
+        indices_pico_canal_2 =indices_pico_canal_2[0]+ indices_pico_canal_1[0] + 30
+        delta_t_21 = (df["tiempo [ns]"][indices_pico_canal_2] - t1.iloc[0]) 
+    else:
+        delta_t_21 = None
+    
+    if len(indices_pico_canal_3) > 0:
+        indices_pico_canal_3 =indices_pico_canal_3[0]+ indices_pico_canal_1[0] + 30
+        delta_t_31 = (df["tiempo [ns]"][indices_pico_canal_3] - t1.iloc[0]) 
+    else:
+        delta_t_31 = None
+                
+    return delta_t_21, delta_t_31
+#%%
+NOMBRE_ARCHIVO = "decaimientos.parquet"
+df = misf.abrir_parquet(NOMBRE_ARCHIVO)
+misf.obtenerInfoDataframe(df)
+resultados = []
+#%%
+for id_dec,dfaux in df.groupby("#decaimiento"):
+    print(id_dec)
+    if len(dfaux["canal 1 [mV]"])==1024:
+        delta_t_aux = extraer_delta_t(dfaux)
+        if delta_t_aux[0] != None:
+            resultados.append(delta_t_aux[0])
+        if delta_t_aux[1] != None:
+            resultados.append(delta_t_aux[1])
+#%%
+#periodo_bin = 50
+#periodo_muestreo = 1698.340
+periodo_muestreo = 1350
+min_m, max_m = 50, 1491 # ns, intervalo de truncado
+tau_real = 2196.981 # ns
+l_real = 1 / tau_real # ns-1
+
+#nbins = int(periodo_muestreo / periodo_bin)
+nbins = 30
+
+fig, ax = plt.subplots()
+ax.hist(resultados, bins= nbins, edgecolor='black', alpha=0.9)
+
+#ax.set_title("Distribución de $\Delta t$")
+ax.set_xlabel("$\Delta t$")
+ax.set_ylabel("Cuentas")
+
+fig.savefig("Decaimientos.png", dpi = 200)
+#%%
+
+def nu_i_ajuste(params, bordes): # calculo los nu_i esperados por bin
+    N_fit, lam_fit = params
+    # SciPy nos pide la escala (1/lambda) y el b estandarizado para evaluar
+    escala_fit = 1 / lam_fit
+    b_std_fit = (max_m - min_m) / escala_fit
+    cdf_evaluada = truncexpon.cdf(bordes, b=b_std_fit, loc=min_m, scale=escala_fit)
+    # es la CDF evaluada en los bordes, 31 en total.
+    p_i = np.diff(cdf_evaluada) # uso la CDF y la resta sucesiva entre los bordes
+    # de los bines para hallar la probabilidad p_i
+    nu_i = N_fit * p_i # eventos esperados en cada bin
+    return nu_i
+
+def nll_poisson(params, n_obs, bordes, f_modelo):# defino la verosimilitud de poisson bineada
+    # Calculamos los nu_i teóricos pasándole los parámetros de la función a elegir
+    nu_i = f_modelo(params, bordes)
+    nu_i = np.maximum(nu_i, 1e-10)# con esto evito que durante la minimización se
+    # evalúe "log(0)" en un nu_i
+    log_L_i = n_obs * np.log(nu_i) - nu_i
+    return -2 * np.sum(log_L_i)
+
+def hessiano_numerico(f, x0, rel_step=1e-3): # para las incertezas
+    x0 = np.asarray(x0, dtype=float)
+    n = len(x0)
+    h = rel_step * np.abs(x0) # paso relativo a cada parámetro (N ~ 1e2, lam ~ 1e-4)
+    H = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            ei = np.zeros(n); ei[i] = h[i]
+            ej = np.zeros(n); ej[j] = h[j]
+            H[i, j] = (f(x0 + ei + ej) - f(x0 + ei - ej)
+                       - f(x0 - ei + ej) + f(x0 - ei - ej)) / (4 * h[i] * h[j])
+    return H
+x_medido = resultados # los decaimientos
+guess = [len(resultados), l_real]
+n_obs, bin_edges = np.histogram(x_medido, bins=nbins, range=(min_m, max_m))
+# con esto obtengo los eventos de cada bin y los bordes de cada bin
+params_fit = minimize(fun=nll_poisson, x0=guess,  # aplico la minimización
+    args=(n_obs, bin_edges, nu_i_ajuste),
+    bounds=([0.1, None],[0.0001, None]), # le pedimos que sea estrictamente positivo
+    method='L-BFGS-B') # esto es un método de "descenso por gradiente". solo le especifico
+    # con qué método realizar la minimización.
+nu_i_fit = nu_i_ajuste(params_fit.x, bin_edges) # calculo los nu_i ajustados
+N_fit, lam_fit = params_fit.x
+m_cov_fit = params_fit.hess_inv.todense()
+
+f_nll = lambda params: nll_poisson(params, n_obs, bin_edges, nu_i_ajuste)
+H_s = hessiano_numerico(f_nll, [N_fit, lam_fit])
+m_cov_s = 2 * np.linalg.inv(H_s) # nll_poisson es -2lnL, por eso la cov. es 2*H^-1
+error_n, error_lam = np.sqrt(np.diag(m_cov_s))
+tau_fit = 1 / lam_fit
+error_tau = error_lam / (lam_fit**2)
+
+x_fit = np.linspace(min_m, max_m, 500)
+pdf_fit = truncexpon.pdf(x_fit, b = (max_m - min_m) / tau_fit, loc=min_m, scale=tau_fit)
+anchos_bines = np.diff(bin_edges)
+centros_bines = (bin_edges[:-1] + bin_edges[1:]) / 2
+factor_escala = N_fit * anchos_bines[0]
+errores_cuentas = np.sqrt(nu_i_fit) # usamos la var o esperanza (es lo mismo).
+ 
+fig1, ax1 = plt.subplots(figsize = (8,6))
+ax1.hist(x_medido, bins = bin_edges, edgecolor='black', alpha=0.9)
+ax1.errorbar(centros_bines,n_obs, yerr=errores_cuentas, fmt='.', color='black', label="Datos")
+ax1.plot(x_fit,pdf_fit * factor_escala,lw=3,alpha=0.8, label="Ajuste")
+ax1.plot([],[], " ", label=r"$\hat{\tau}$ = "f"({tau_fit:.0f} ± {error_tau:.0f} ns)")
+ax1.set_xlabel("$\Delta t$ [ns]")
+ax1.set_ylabel("Cuentas")
+ax1.legend()
+fig1.tight_layout()
+fig1.savefig("decaimientos_ajustados.png")
+fig1.show()
+#%%
+# ahora queremos testear la bondad del ajuste, para lo cual hacemos simulaciones.
+N_datos = len(resultados)
+b_estandarizado = (max_m - min_m) / tau_real # parámetro que toma la función que me
+# genera los datos de la exponencial
+rng = np.random.default_rng(42) # rng se define una sola vez por fuera para que
+# las simulaciones sean distintas. le pongo un valor fijo para que puedan ser reproducibles
+n_bins = 30 # vamos a trabajar con histogramas de 30 bins.
+
+def logl_distribucion(n_medidos, bordes): # le paso los datos medidos por bin y los bordes de cada bin
+    # SciPy nos pide la escala (1/lambda) y el b estandarizado para evaluar
+    escala_real = 1 / l_real
+    b_std_real = (max_m - min_m) / escala_real
+    cdf_evaluada = truncexpon.cdf(bordes, b=b_std_real, loc=min_m, scale=escala_real)
+    # es la CDF evaluada en los bordes, 31 en total.
+    p_i = np.diff(cdf_evaluada) # uso la CDF y la resta sucesiva entre los bordes
+    # de los bines para hallar la probabilidad p_i
+    nu_i = N_datos * p_i # eventos esperados en cada bin
+    return 2 * np.sum(nu_i - n_medidos + xlogy(n_medidos, n_medidos / nu_i)) # xlogy maneja n_i = 0 sin generar NaN
+
+
+
+#%%
+def simular_experimento():
+    x_medido = truncexpon.rvs(b=b_estandarizado, loc=min_m, scale=tau_real,
+                              size=N_datos, random_state=rng) # los datos de la simulación
+    n_obs, bin_edges = np.histogram(x_medido, bins=n_bins, range=(min_m, max_m))
+    logl_simulado = logl_distribucion(n_obs, bin_edges)
+    return logl_simulado
+
+rng = np.random.default_rng(42) # rng se define una sola vez por fuera para que
+cant_simulaciones = 100000 # hacemos 10**5 simulaciones, tarda bastante poco en simular.
+logl_obtenidos = []
+
+for i in range(cant_simulaciones):
+    logl_obtenido = simular_experimento() # simulamos
+    logl_obtenidos.append(logl_obtenido) # guardamos los resultados
+    if (i + 1) % 10000 == 0:
+        print(f"Simulaciones procesadas: {i + 1}")
+#%%
+def simular_experimento():
+    x_medido = truncexpon.rvs(b=b_estandarizado, loc=min_m, scale=tau_real,
+                              size=N_datos, random_state=rng) # los datos de la simulación
+    n_obs, bin_edges = np.histogram(x_medido, bins=n_bins, range=(min_m, max_m))
+    logl_simulado = nll_poisson([N_datos,l_real], n_obs, bin_edges, nu_i_ajuste)
+    return logl_simulado
+def nll_poisson(params, n_obs, bordes, f_modelo):# defino la verosimilitud de poisson bineada
+    # Calculamos los nu_i teóricos pasándole los parámetros de la función a elegir
+    nu_i = f_modelo(params, bordes)
+    nu_i = np.maximum(nu_i, 1e-10)# con esto evito que durante la minimización se
+    # evalúe "log(0)" en un nu_i
+    log_L_i = n_obs * np.log(nu_i) - nu_i
+    return -2 * np.sum(log_L_i)
+
+rng = np.random.default_rng(42) # rng se define una sola vez por fuera para que
+cant_simulaciones = 100000 # hacemos 10**5 simulaciones, tarda bastante poco en simular.
+logl_obtenidos = []
+
+for i in range(cant_simulaciones):
+    logl_obtenido = simular_experimento() # simulamos
+    logl_obtenidos.append(logl_obtenido) # guardamos los resultados
+    if (i + 1) % 10000 == 0:
+        print(f"Simulaciones procesadas: {i + 1}")
+#%%
+logl_medido = nll_poisson([N_fit,lam_fit], n_obs, bin_edges, nu_i_ajuste)
+print(logl_medido)
+h0_rv = rv_histogram(np.histogram(logl_obtenidos, bins="auto"))
+beta = h0_rv.cdf(logl_medido)
+p_val = 1 - beta
+print(f"{beta:.2f}")
+print(f"{p_val:.2f}")
+
+
+#%%
+plt.rc("font", size=16)
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.hist(logl_obtenidos, bins=100, density=True, alpha=0.6, color="C1", label="Simulaciones")
+#x = np.linspace(0, logl_obtenidos.max(), 400)
+#ax.plot(x, chi2.pdf(x, df=n_bins - 1), color="C0", lw=2.5, label=r"$\chi^2$ (29 g.l.)")
+#ax.axvline(logl_medido, color="k", ls="--", label=f"Medido (p = {p_valor:.2f})")
+#ax.set_xlabel(r"- 2 log(L) [u.a.]")
+ax.set_xlabel(r"$\mathscr{L}$ [u.a.]")
+ax.set_ylabel(r"PDF [u.a.]")
+ax.tick_params(axis='y', labelsize=12)
+ax.minorticks_on()
+ax.legend(fontsize=12)
+fig.tight_layout()
+fig.savefig("simulaciones_verosimilitud.png")
+fig.show()
+#%%
+
+
+
+
+
+
+
+import numpy as np
+from scipy.stats import truncexpon
+from scipy.special import xlogy
+
+n_bins, n_sim = 30, 100000
+resultados_np = np.array(resultados) 
+
+x = resultados_np[(resultados_np >= min_m) & (resultados_np <= max_m)]
+N = len(x)
+b = (max_m - min_m) / tau_real
+bordes = np.linspace(min_m, max_m, n_bins + 1)
+nu = N * np.diff(truncexpon.cdf(bordes, b=b, loc=min_m, scale=tau_real))  # se calcula una sola vez
+
+def nll(n): return -2 * np.sum(xlogy(n, nu) - nu)           # equivale a nll_poisson
+def dev(n): return 2 * np.sum(nu - n + xlogy(n, n / nu))    # equivale a logl_distribucion
+
+rng = np.random.default_rng(42)
+sim = np.empty((n_sim, 2))
+for i in range(n_sim):
+    n = np.histogram(truncexpon.rvs(b=b, loc=min_m, scale=tau_real, size=N, random_state=rng), bins=bordes)[0]
+    sim[i] = nll(n), dev(n)
+
+n_med = np.histogram(x, bins=bordes)[0]
+med = np.array([nll(n_med), dev(n_med)])
+p = (sim >= med).mean(axis=0)
+for nombre, m, pi in zip(["nll_poisson", "deviance"], med, p):
+    print(f"{nombre}: medido = {m:.2f} | p = {pi:.3f} | beta = {1 - pi:.3f}")
+
+
+
+
+

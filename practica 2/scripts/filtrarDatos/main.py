@@ -3,7 +3,7 @@ import pandas as pd
 import funciones as misf
 
 
-carpeta_datos = Path("Datos1raYsegundaSemana/")
+carpeta_datos = Path("medicionEficienciaOrden312/")
 archivos_txt = list(carpeta_datos.glob("*.txt"))
 
 n_decaimiento = 1
@@ -26,7 +26,7 @@ for archivo in archivos_txt:
 
 if lista_dataframes:
     df_total = pd.concat(lista_dataframes, ignore_index=True)
-    ruta_salida = carpeta_datos / "decaimientos.parquet"
+    ruta_salida = carpeta_datos / "e0312.parquet"
     df_total.to_parquet(ruta_salida, index=False)
     print(f"Procesados {n_decaimiento - 1} decaimientos. Guardado en: {ruta_salida.name}")
 else:
