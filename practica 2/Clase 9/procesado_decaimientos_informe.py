@@ -81,6 +81,7 @@ for id_dec,dfaux in df.groupby("#decaimiento"):
             resultados.append(delta_t_aux[1])
             print("Canal 3:", delta_t_aux[1])
     print("----------------")
+print("Cantidad de decaimientos:",len(resultados))
 #%%
 #min_m, max_m = 50, 1491 # ns, intervalo de truncado
 #nbins = 30
@@ -178,6 +179,7 @@ min_m, max_m = 100, 1491 # ns, intervalo de truncado
 tau_real = 2196.981 # ns
 l_real = 1 / tau_real # ns-1
 nbins = 30
+print("Cantidad de decaimientos cortados:",len(resultados))
 
 def nu_i_ajuste(params, bordes): # calculo los nu_i esperados por bin
     N_fit, lam_fit = params
@@ -226,11 +228,12 @@ ax1.errorbar(centros_bines,n_obs, yerr=errores_cuentas, fmt='.', color='black', 
 ax1.plot(x_fit,pdf_fit * factor_escala,lw=3,alpha=0.8, label="Ajuste")
 ax1.plot([],[], " ", label=r"$\hat{\tau}$ = (2000 ± 300) ns")
 ax1.plot([],[], " ", label=r"$\hat{N_{fit}}$ = 1620 ± 40")
+ax1.plot([],[], " ", label=r"$N_{fit}$ = 1618")
 ax1.set_xlabel("$\Delta t$ [ns]")
 ax1.set_ylabel("Cuentas")
 ax1.set_xlim(50,1550)
 ax1.set_ylim(0,90)
-ax1.legend()
+ax1.legend(fontsize=13)
 fig1.tight_layout()
 fig1.savefig("decaimientos_ajustados_todos_recortados_informe.png")
 fig1.show()
