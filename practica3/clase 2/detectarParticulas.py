@@ -128,3 +128,35 @@ ax.grid(True, linestyle=':', alpha=0.6)
 ax.legend()
 plt.tight_layout()
 plt.show()
+
+#%% 5. ESTIMACIÓN DEL COEFICIENTE DE DIFUSIÓN (D) Y EXPONENTE ANÓMALO (alpha)
+from scipy.stats import linregress
+
+# Consideramos solo los primeros puntos (ej. primeros 10 lagtimes) donde el ajuste es más confiable
+n_puntos = 10
+tau = emsd.index[:n_puntos].values
+msd = emsd.values[:n_puntos]
+
+# 1. Ajuste lineal estándar para 2D: MSD = 4 * D * tau + C
+res_lineal = linregress(tau, msd)
+D = res_lineal.slope / 4.0  # Coeficiente de difusión en µm²/s
+
+# 2. Ajuste log-log para hallar el exponente anómalo alpha: log(MSD) = alpha * log(tau) + log(A)
+# Evitamos tau = 0 o valores negativos
+mask = (tau > 0) & (msd > 0)
+log_tau = np.log(tau[mask])
+log_msd = np.log(msd[mask])
+res_log = linregress(log_tau, log_msd)
+alpha = res_log.slope
+
+print(f"--- RESULTADOS DEL ANÁLISIS ---")
+print(f"Coeficiente de difusión D: {D:.4f} µm²/s")
+print(f"Exponente anómalo (alpha): {alpha:.2f}")
+
+# Interpretación rápida del régimen de movimiento
+if 0.9 <= alpha <= 1.1:
+    print("Régimen: Difusión Browniana pura (normal)")
+elif alpha < 0.9:
+    print("Régimen: Subdifusión (movimiento confinado o con obstáculos)")
+else:
+    print("Régimen: Superdifusión (transporte activo o flujo)")
