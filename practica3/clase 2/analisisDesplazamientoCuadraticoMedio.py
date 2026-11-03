@@ -2,14 +2,15 @@ import funciones as f
 import matplotlib.pyplot as plt
 import trackpy as tp
 import numpy as np
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit 
 from scipy.stats import chi2 as chi2_dist
+    
 
 #%%    Cargar video
 ruta_video = 'recorte2.avi'
 frames, escala= f.cargar_video(ruta_video)
 #%%    figura de frame
-d_micro = 3.0  # Diámetro estimado de detección en µm
+d_micro = 3.5  # Diámetro estimado de detección en µm
 diam = int(d_micro // escala)
 if diam % 2 == 0:
     diam += 1  # trackpy exige un número entero impar de píxeles
@@ -43,7 +44,7 @@ msds = []
 for nParticula in particulas.index:
     x_inicial = particulas.loc[nParticula, 'x']
     y_inicial = particulas.loc[nParticula, 'y']
-
+    
     trayectoria = f.rastrear_particula_roi(frames, x_inicial, y_inicial, nframe,
                                             diam, minmass, radio_caja=100)
     
@@ -70,8 +71,28 @@ print(f"\nMSD : {MSD}")
 def modelo(t, A_, n_):
     return A_ * t**n_
 
-popt, pcov = curve_fit(modelo, tiempo, MSD, p0=[MSD[-1] / tiempo[-1], 1.0], 
-                       sigma=err, absolute_sigma=True)
+# Recalcular el error estándar punto a punto de forma robusta
+std_muestra = np.nanstd(A, axis=0, ddof=1)
+N_activa = np.sum(~np.isnan(A), axis=0)
+# Error Estándar de la Media (SEM)
+err_c = std_muestra / np.sqrt(N_activa)
+
+mascara = tiempo < 1.0
+tiempo_fit = tiempo[mascara]
+MSD_fit = MSD[mascara]
+err_fit = err_c[mascara]
+
+
+# Elimina la fila cuyo índice es 0 (primera posición)
+tiempo_fit = tiempo[mascara][1:]
+MSD_fit = MSD[mascara][1:]
+err_fit = err[mascara][1:]
+
+popt, pcov = curve_fit(modelo, tiempo_fit, MSD_fit, p0=[MSD_fit[-1] / tiempo_fit[-1], 1.0], 
+                       sigma=err_fit, absolute_sigma=False)
+
+A_fit, n_fit = popt
+dA, dn = np.sqrt(np.diag(pcov))  # Incertidumbres reales y confiables de A y n
 A_fit, n_fit = popt
 dA, dn = np.sqrt(np.diag(pcov))
 
@@ -87,9 +108,9 @@ print(f"A = {A_fit:.4f} ± {dA:.4f} | n = {n_fit:.3f} ± {dn:.3f}")
 
 #%% 
 fig, ax = plt.subplots(figsize=(7, 5))
-ax.errorbar(tiempo, MSD, yerr=err, fmt='o', mfc='none', mec='tab:blue', ecolor='tab:blue',
+ax.errorbar(tiempo, MSD, yerr=err_c, fmt='o', mfc='none', mec='tab:blue', ecolor='tab:blue',
             ms=4, elinewidth=1, capsize=2, label=f'Datos (N={N})')
-ax.plot(tiempo, modelo(tiempo, *popt), '-', color='tab:red', lw=2.5,
+ax.plot(tiempo_fit, modelo(tiempo_fit, *popt), '-', color='tab:red', lw=2.5,
         label=r'Ajuste')
 
 texto = (rf'$A = {A_fit:.3f} \pm {dA:.3f}$' '\n'
@@ -106,11 +127,70 @@ ax.legend(loc='upper left')
 plt.tight_layout()
 plt.show()
 
+# %%
+#%% Ajuste MSD = A * t^n (ponderado)
+def modelo(t, A_, n_):
+    return A_ * t**n_
+
+# 1. Error estándar punto a punto (SEM)
+std_muestra = np.nanstd(A, axis=0, ddof=1)
+N_activa = np.sum(~np.isnan(A), axis=0)
+err_c = std_muestra / np.sqrt(N_activa)
+
+# 2. Máscara tau < 1.0 s sin el primer elemento
+mascara = tiempo < 1.0
+tiempo_fit = tiempo[mascara][1:]
+MSD_fit = MSD[mascara][1:]
+err_fit = err_c[mascara][1:]
+
+
+
+# 3. Ajuste no lineal
+popt, pcov = curve_fit(modelo, tiempo_fit, MSD_fit, 
+                       p0=[MSD_fit[-1] / tiempo_fit[-1], 1.0], 
+                       sigma=err_fit, absolute_sigma=False)
+
+A_fit, n_fit = popt
+dA, dn = np.sqrt(np.diag(pcov))
+
+# 4. Cálculo del Chi cuadrado reducido y p-valor
+residuos = (MSD_fit - modelo(tiempo_fit, *popt)) / err_fit
+chi2 = np.sum(residuos**2)
+dof = len(tiempo_fit) - len(popt)  # Grados de libertad (N_puntos - N_parametros)
+chi2_red = chi2 / dof
+p_valor = chi2_dist.sf(chi2, dof)
+
+print(f"A = {A_fit:.4f} ± {dA:.4f} | n = {n_fit:.3f} ± {dn:.3f}")
+print(f"Chi2 red = {chi2_red:.3f} | p-valor = {p_valor:.4e} | dof = {dof}")
+
+#%% Gráfico
+fig, ax = plt.subplots(figsize=(7, 5))
+ax.errorbar(tiempo, MSD, yerr=err_c, fmt='o', mfc='none', mec='tab:blue', ecolor='tab:blue',
+            ms=4, elinewidth=1, capsize=2, label=f'Datos (N={N})')
+
+tiempo_dibujo = np.linspace(tiempo_fit[0], tiempo_fit[-1], 100)
+ax.plot(tiempo_dibujo, modelo(tiempo_dibujo, *popt), '-', color='tab:red', lw=2.5,
+        label=r'Ajuste ($\tau < 1$ s)')
+
+texto = (rf'$A = {A_fit:.3f} \pm {dA:.3f}$' '\n'
+         rf'$n = {n_fit:.3f} \pm {dn:.3f}$' '\n'
+         rf'$\chi^2_{{red}} = {chi2_red:.2f}$')
+
+ax.text(0.97, 0.05, texto, transform=ax.transAxes, ha='right', va='bottom',
+        bbox=dict(boxstyle='round', facecolor='white', alpha=0.85))
+
+ax.set_xlabel('Tiempo (s)')
+ax.set_ylabel(r'$\langle r^2 \rangle$ (µm$^2$)')
+ax.set_xlim(0, None); ax.set_ylim(0, None)
+ax.grid(True, alpha=0.4)
+ax.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
+
 #%% mostrar trayectoria superpuesta
 f.superponer_trayectoria_video(frames, trayectoria, diam, frame_muestra = 30)
 
-
-#%%
+# %%
 """
 fps = 15.0
 nParticula = 1
