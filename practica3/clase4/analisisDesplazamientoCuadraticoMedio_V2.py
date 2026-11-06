@@ -7,7 +7,7 @@ rutaVideo = "sinLserGod1_1.avi"
 escala = f.obtener_escala()
 
 # Parámetros de detección
-d_micro = 3.01  # µm
+d_micro = 4.01  # µm
 diam = int(d_micro // escala)
 if diam % 2 == 0:
     diam += 1
@@ -15,19 +15,19 @@ if diam % 2 == 0:
 
 
 #%% Visualización del frame 0 para elegir partícula
-minmass = 10000
+minmass = 20000
 nframe = 0
 fig, ax, particulas = f.dibujarFrame(rutaVideo, nframe, diam, minmass)
 
 #%% Selección de partícula
-nParticula = 14
+nParticula = 17
 x_inicial = particulas.loc[nParticula, 'x']
 y_inicial = particulas.loc[nParticula, 'y']
 print(f"La partícula {nParticula} está en la posición: x = {x_inicial:.2f}, y = {y_inicial:.2f}")
 
 # Rastrear (inicia en frame 0 de forma predeterminada)
 trayectoria = f.rastrear_particula_roi(
-    rutaVideo, x_inicial, y_inicial, diam, minmass, radio_caja=100, n_inicio=0
+    rutaVideo, x_inicial, y_inicial, diam, minmass, radio_caja=70, n_inicio=0
 )
 
 #%% Guardar trayectoria

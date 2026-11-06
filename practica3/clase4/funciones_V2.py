@@ -153,3 +153,86 @@ def superponer_trayectoria_video(ruta_video, t_individual, diam, frame_muestra=1
     dib(frame)
     return t_individual
     #dib(frameFinal)
+def exportar_video_trayectoria(ruta_video_entrada, ruta_video_salida, t_individual, diam, fps=None):
+    """
+    Lee el video original desde disco y exporta un nuevo archivo de video (.mp4 o .avi)
+    dibujando la posición actual de la partícula y la estela acumulada cuadro por cuadro.
+    Uso de RAM constante O(1).
+    """
+    if t_individual.empty:
+        print("Error: El DataFrame de trayectoria está vacío.")
+        return
+
+    cap = cv2.VideoCapture(ruta_video_entrada)
+    if not cap.isOpened():
+        raise FileNotFoundError(f"No se pudo abrir el video: {ruta_video_entrada}")
+
+    # Obtener propiedades del video original
+    ancho = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    alto = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if fps is None:
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        if fps <= 0 or np.isnan(fps):
+            fps = 30.0  # Valor por defecto si el .avi no reporta FPS
+
+    # Configurar el escritor de video (mp4v para .mp4, o XVID para .avi)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(ruta_video_salida, fourcc, fps, (ancho, alto), isColor=True)
+
+    # Ordenar trayectoria por frame para asegurar continuidad
+    t_ord = t_individual.sort_values(by='frame').reset_index(drop=True)
+    frame_inicio = int(t_ord['frame'].iloc[0])
+    frame_fin = int(t_ord['frame'].iloc[-1])
+
+    # Diccionario {num_frame: (x, y)} para búsqueda instantánea O(1)
+    mapa_posiciones = {
+        int(row['frame']): (float(row['x']), float(row['y'])) 
+        for _, row in t_ord.iterrows()
+    }
+
+    # Posicionar la lectura en el primer frame de la trayectoria
+    if frame_inicio > 0:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_inicio)
+
+    puntos_estela = []
+    radio_circulo = max(1, int(round(diam / 2)))
+
+    print(f"Generando video desde el frame {frame_inicio} hasta {frame_fin}...")
+
+    for num_frame in range(frame_inicio, frame_fin + 1):
+        ret, frame_bgr = cap.read()
+        if not ret:
+            break
+
+        # Extraer el canal verde y pasarlo a BGR de 3 canales para poder dibujar en color sobre fondo gris
+        canal_verde = frame_bgr[:, :, 1]
+        frame_vis = cv2.cvtColor(canal_verde, cv2.COLOR_GRAY2BGR)
+
+        if num_frame in mapa_posiciones:
+            x_actual, y_actual = mapa_posiciones[num_frame]
+            pt_actual = (int(round(x_actual)), int(round(y_actual)))
+            puntos_estela.append(pt_actual)
+
+            # 1. Dibujar la estela acumulada (color amarillo en BGR: (0, 255, 255) o negro: (0, 0, 0))
+            if len(puntos_estela) > 1:
+                pts_array = np.array(puntos_estela, dtype=np.int32).reshape((-1, 1, 2))
+                cv2.polylines(frame_vis, [pts_array], isClosed=False, color=(0, 255, 255), thickness=2, lineType=cv2.LINE_AA)
+
+            # 2. Marcar el punto inicial (verde)
+            cv2.circle(frame_vis, puntos_estela[0], radius=3, color=(0, 255, 0), thickness=-1)
+
+            # 3. Dibujar el círculo alrededor de la partícula actual (rojo en BGR: (0, 0, 255))
+            cv2.circle(frame_vis, pt_actual, radius=radio_circulo, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_AA)
+
+        # 4. Agregar texto con el número de frame arriba a la izquierda
+        cv2.putText(
+            frame_vis, f"Frame: {num_frame}", (20, 40),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA
+        )
+
+        # Guardar el fotograma procesado en el archivo de video
+        out.write(frame_vis)
+
+    cap.release()
+    out.release()
+    print(f"Video guardado exitosamente en: {ruta_video_salida}")
