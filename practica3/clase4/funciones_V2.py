@@ -94,24 +94,31 @@ def rastrear_particula_roi(ruta_video, x_inicial, y_inicial, diam, minmass, radi
 
 def superponer_trayectoria_video(ruta_video, t_individual, diam, frame_muestra=10):
     datos_frame = t_individual[t_individual['frame'] == frame_muestra]
+    frame_fin = len(t_individual)-1
     if datos_frame.empty:
         print(f"El frame {frame_muestra} no está registrado en la trayectoria.")
         return
 
     frame = obtener_frame(ruta_video, frame_muestra)
-
-    fig, ax = plt.subplots(figsize=(8, 8))
-    x_pos = datos_frame['x'].values[0]
-    y_pos = datos_frame['y'].values[0]
-
-    ax.imshow(frame, cmap='gray')
-    circulo = plt.Circle((x_pos, y_pos), diam, color='red', fill=False, linewidth=2)
-    ax.add_patch(circulo)
-
-    estela = t_individual[t_individual['frame'] <= frame_muestra]
-    ax.plot(estela['x'], estela['y'], color='yellow', linestyle='-', linewidth=1.5, label='Trayectoria')
-
-    ax.set_title(f"Verificación - Frame {frame_muestra}")
-    ax.legend()
-    plt.tight_layout()
-    plt.show()
+    frameFinal = obtener_frame(ruta_video,frame_fin)
+    
+    def dib(frame):
+        fig, ax = plt.subplots(figsize=(8, 8))
+        x_pos = datos_frame['x'].values[0]
+        y_pos = datos_frame['y'].values[0]
+    
+        ax.imshow(frame, cmap='gray')
+        circulo = plt.Circle((x_pos, y_pos), diam, color='red', fill=False, linewidth=2)
+        ax.add_patch(circulo)
+    
+        #estela = t_individual[t_individual['frame'] <= frame_muestra]
+        ax.plot(t_individual['x'], t_individual['y'], color='black', linestyle='-', linewidth=1.5, label='Trayectoria')
+    
+        ax.set_title(f"Verificación - Frame {frame_muestra}")
+        ax.legend()
+        plt.tight_layout()
+        plt.show()
+        
+    dib(frame)
+    return t_individual
+    #dib(frameFinal)
