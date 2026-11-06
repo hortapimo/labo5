@@ -2,13 +2,36 @@ import cv2
 import matplotlib.pyplot as plt
 import trackpy as tp
 import pandas as pd
+import api as api
 
 def obtener_escala():
     """Devuelve la escala en µm/px."""
     distancia_um = 0.1 * 1000
     distancia_px = 1049.9014
     return distancia_um / distancia_px
+def preprocesar_frame(frame_gris, diam):
+    """
+    Limpia el ruido de alta frecuencia, corrige la iluminación no uniforme (viñeteo)
+    y resalta partículas oscuras redondas dejándolas brillantes sobre fondo oscuro.
+    """
+    # 1. Suavizar el grano fino del sensor sin perder el borde de la partícula
+    suavizado = cv2.GaussianBlur(frame_gris, (3, 3), 0)
 
+    # 2. Definir un elemento estructurante elíptico un poco más grande que la partícula
+    # Esto asegura que las partículas entren en el filtro pero las manchas grandes de fondo se ignoren
+    tam_kernel = int(diam * 1.5)
+    if tam_kernel % 2 == 0:
+        tam_kernel += 1
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (tam_kernel, tam_kernel))
+
+    # 3. Transformación Black-Hat: extrae elementos oscuros más pequeños que el kernel
+    # IMPORTANTE: El resultado ya queda invertido (partículas blancas, fondo negro)
+    blackhat = cv2.morphologyEx(suavizado, cv2.MORPH_BLACKHAT, kernel)
+
+    # 4. Normalizar el contraste entre 0 y 255 para estabilizar 'minmass'
+    procesado = cv2.normalize(blackhat, None, 0, 255, cv2.NORM_MINMAX)
+
+    return procesado
 def obtener_frame(ruta_video, n_frame):
     """Extrae un único frame del video sin cargar el resto en memoria."""
     cap = cv2.VideoCapture(ruta_video)
@@ -17,6 +40,9 @@ def obtener_frame(ruta_video, n_frame):
     
     cap.set(cv2.CAP_PROP_POS_FRAMES, n_frame)
     ret, frame = cap.read()
+    #frame=frame.max() - frame
+    
+    #frame = smo(frame,sigma=2, size=3)
     cap.release()
     
     if not ret:
@@ -25,7 +51,12 @@ def obtener_frame(ruta_video, n_frame):
 
 def dibujarFrame(ruta_video, nFrame, diam, minmass):
     frame = obtener_frame(ruta_video, nFrame)
-    particulas = tp.locate(frame, diameter=diam, minmass=minmass, invert=True).reset_index(drop=True)
+    frame = preprocesar_frame(frame, diam)
+   
+    # smo=api.SMO(sigma=1, size=3,shape=(1024,1024))
+    # frame = smo.bg_corrected(frame)
+    
+    particulas = tp.locate(frame, diameter=diam, minmass=minmass, invert=False).reset_index(drop=True)
 
     fig, axes = plt.subplots(figsize=(8, 8))
     tp.annotate(particulas, frame, ax=axes)
@@ -68,7 +99,7 @@ def rastrear_particula_roi(ruta_video, x_inicial, y_inicial, diam, minmass, radi
             break
 
         frame = frame_bgr[:, :, 1]
-
+        frame = preprocesar_frame(frame, diam)
         # Límites del ROI
         ymin = max(0, int(y_actual - radio_caja))
         ymax = min(frame.shape[0], int(y_actual + radio_caja))
@@ -76,7 +107,7 @@ def rastrear_particula_roi(ruta_video, x_inicial, y_inicial, diam, minmass, radi
         xmax = min(frame.shape[1], int(x_actual + radio_caja))
 
         recorte = frame[ymin:ymax, xmin:xmax]
-        f_recorte = tp.locate(recorte, diameter=diam, minmass=minmass, invert=True)
+        f_recorte = tp.locate(recorte, diameter=diam, minmass=minmass, invert=False)
 
         if len(f_recorte) > 0:
             mejor_punto = f_recorte.sort_values(by='mass', ascending=False).iloc[0]
