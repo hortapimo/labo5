@@ -7,7 +7,7 @@ from scipy.stats import chi2 as chi2_dist
     
 
 #%%    Cargar video
-ruta_video = 'recorte2.avi'
+ruta_video = 'recorte.avi'
 frames, escala= f.cargar_video(ruta_video)
 #%%    figura de frame
 d_micro = 3.5  # Diámetro estimado de detección en µm
