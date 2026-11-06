@@ -153,6 +153,7 @@ def superponer_trayectoria_video(ruta_video, t_individual, diam, frame_muestra=1
     dib(frame)
     return t_individual
     #dib(frameFinal)
+    
 def exportar_video_trayectoria(ruta_video_entrada, ruta_video_salida, t_individual, diam, fps=None):
     """
     Lee el video original desde disco y exporta un nuevo archivo de video (.mp4 o .avi)
