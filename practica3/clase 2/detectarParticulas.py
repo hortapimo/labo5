@@ -7,7 +7,7 @@ import trackpy as tp
 
 #%% 1. CARGAR VIDEO Y CALIBRAR EN EL PRIMER FRAME
 # Coloca la ruta local a tu archivo de video en tu PC
-ruta_video = 'videoOtroGrupo.avi'
+ruta_video = '/home/juan_cruz/Descargas/Test.avi'
 
 # Escala de calibración: micrómetros por píxel
 distancia_um = 0.1 * 1000
@@ -40,7 +40,7 @@ minmass = 2000  # Brillantez mínima para descartar ruido de fondo
 frame_prueba = 0
 
 # Localizar partículas en un solo cuadro
-f_prueba = tp.locate(frames[frame_prueba], diameter=diam, minmass=minmass, invert=True)
+f_prueba = tp.locate(frames[frame_prueba], diameter=diam, minmass=minmass, invert = True)
 
 # Visualizar detección e histograma de masas
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
@@ -65,7 +65,7 @@ plt.show()
 tp.quiet()  # Desactiva los mensajes de progreso por consola para acelerar el cálculo
 
 # Detectar en todos los frames (puedes usar frames[:500] para probar con una fracción)
-f_todas = tp.batch(frames[:30], diameter=diam, minmass=minmass, invert=True)
+f_todas = tp.batch(frames[:100], diameter=diam, minmass=minmass, invert=True)
 
 # Unir posiciones cuadro a cuadro para armar las trayectorias
 t = tp.link(f_todas, search_range=diam // 2, memory=3)
@@ -93,3 +93,4 @@ plt.show()
 
 # Opcional: Guardar la tabla de posiciones en el mismo directorio del script
 # t_final.to_csv('trayectorias_particulas.csv', index=False)
+
