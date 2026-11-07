@@ -117,7 +117,6 @@ if ajustar_cada_particula:
     n_ind = np.array(n_ind)
     print(f"\nn medio entre partículas = {n_ind.mean():.3f} ± {n_ind.std(ddof=1):.3f} (desv. estándar)")
 
-
 #%% Gráfico (las curvas parten desde t = 0)
 # Solo para graficar se agrega el punto (t = 0, msd = 0); el ajuste usa los datos originales
 
@@ -134,7 +133,7 @@ for k in range(len(archivos)):
             label=f"Partículas (Total = {len(archivos)})" if k == 0 else None)
 ax.plot(t_plot, msd_prom_plot, color="red", linewidth=2.5, ms=4, label="Promedio")
 ax.plot(t_fit, modelo(t_fit, *popt), "k-", lw=2,
-        label=f"Ajuste: $A t^n + (v t)^2 $, A = {A_fit:.4g} ± {err_A:.2g} , \nn = {n_fit:.2f} ± {err_n:.2f} , v = {v_fit:.2f} ± {err_v:.2f}")
+        label=f"Ajuste: $A t^n + (v t)^2 $, A = {A_fit:.2f} ± {err_A:.2f} , \nn = {n_fit:.2f} ± {err_n:.2f} , v = {v_fit:.2f} ± {err_v:.2f}")
 
 ax.set_xlabel("Tiempo ( s )", fontweight="bold")
 ax.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
@@ -155,3 +154,168 @@ plt.show()
 pd.DataFrame({"paso": pasos, "t_s": t_n, "msd_promedio": msd_prom, "n_particulas": n_part}).to_csv(
     "msd_ensamble.csv", index=False, encoding="utf-8")
 fig.savefig("msd_ensamble.png", dpi=200)
+
+
+#%% Partícula individual: datos de MSD y ajuste con deriva
+# Elegí la partícula por su número en la lista (0, 1, 2, ...) o por un texto del nombre
+# del archivo (por ejemplo "particula17"). Solo se pueden elegir las que pasaron el filtro.
+"""
+particula = 2
+ 
+print("\n--- Partículas disponibles ---")
+for k, archivo in enumerate(archivos):
+    print(f"[{k}] {os.path.basename(archivo)}")
+ 
+if isinstance(particula, str):
+    coincidencias = [k for k, archivo in enumerate(archivos) if particula in os.path.basename(archivo)]
+    if not coincidencias:
+        raise ValueError(f"Ningún archivo utilizado contiene '{particula}' en su nombre.")
+    k_sel = coincidencias[0]
+else:
+    if not 0 <= particula < len(archivos):
+        raise ValueError(f"particula debe estar entre 0 y {len(archivos) - 1}.")
+    k_sel = particula
+ 
+ok = ~np.isnan(MSD[k_sel])
+t_p = t_n[ok]
+msd_p = MSD[k_sel][ok]
+ 
+popt_p, err_p, r_cuadrado_p = ajustar(t_p, msd_p)
+A_p, n_p, v_p = popt_p
+err_A_p, err_n_p, err_v_p = err_p
+ 
+print(f"\n--- Ajuste de la partícula [{k_sel}] {os.path.basename(archivos[k_sel])} ---")
+print(f"A = {A_p:.4g} ± {err_A_p:.2g}")
+print(f"n = {n_p:.4g} ± {err_n_p:.2g}")
+print(f"v = {v_p:.4g} ± {err_v_p:.2g}")
+print(f"R² = {r_cuadrado_p:.5f}")
+ 
+t_fit_p = np.linspace(0, t_p[-1], 300)
+ 
+fig_p, ax_p = plt.subplots(figsize=(6, 5))
+ax_p.plot(t_p, msd_p, "o", color="#4CAF50", ms=4, label=f"Datos (partícula {k_sel})")
+ax_p.plot(t_fit_p, modelo(t_fit_p, *popt_p), "k-", lw=2,
+          label=f"Ajuste: $A t^n + (v t)^2 $, A = {A_p:.4g} ± {err_A_p:.2g} , \nn = {n_p:.2f} ± {err_n_p:.2f} , v = {v_p:.2f} ± {err_v_p:.2f} \nR² = {r_cuadrado_p:.5f}")
+ 
+ax_p.set_xlabel("Tiempo ( s )", fontweight="bold")
+ax_p.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
+if loglog:
+    ax_p.set_xscale("log")
+    ax_p.set_yscale("log")
+else:
+    ax_p.set_xlim(0, t_p[-1])
+    ax_p.set_ylim(bottom=0)
+ax_p.grid(alpha=0.3)
+ax_p.legend(fontsize=10, loc="best")
+fig_p.tight_layout()
+plt.show()
+"""
+
+#%% Partícula individual: datos de MSD y ajuste con deriva
+# Elegí la partícula por su número en la lista (0, 1, 2, ...) o por un texto del nombre
+# del archivo (por ejemplo "particula17"). Solo se pueden elegir las que pasaron el filtro.
+particula = 0
+ 
+print("\n--- Partículas disponibles ---")
+for k, archivo in enumerate(archivos):
+    print(f"[{k}] {os.path.basename(archivo)}")
+ 
+if isinstance(particula, str):
+    coincidencias = [k for k, archivo in enumerate(archivos) if particula in os.path.basename(archivo)]
+    if not coincidencias:
+        raise ValueError(f"Ningún archivo utilizado contiene '{particula}' en su nombre.")
+    k_sel = coincidencias[0]
+else:
+    if not 0 <= particula < len(archivos):
+        raise ValueError(f"particula debe estar entre 0 y {len(archivos) - 1}.")
+    k_sel = particula
+ 
+ponderar = True    # True: el ajuste pesa cada punto con su barra de error (1/sigma²)
+ 
+ 
+def msd_con_error(archivo):
+    """Igual que msd_trayectoria, pero devuelve además el error estándar de cada punto.
+ 
+    El MSD en el paso n es el promedio de r2(t_1..t_n); su error es el error estándar
+    de la media: std(r2[:n], ddof=1) / sqrt(n). Para n = 1 no está definido (NaN).
+    """
+    df = pd.read_csv(archivo)             # si no tiene encabezado: header=None
+    df = df.iloc[:, :3].dropna()
+    x = df.iloc[:, 1].to_numpy() * um_por_px * factor
+    y = df.iloc[:, 2].to_numpy() * um_por_px * factor
+    r2 = ((x - x[0])**2 + (y - y[0])**2)[1:]
+    n = np.arange(1, len(r2) + 1)
+    msd = np.cumsum(r2) / n
+    sem = pd.Series(r2).expanding().std(ddof=1).to_numpy() / np.sqrt(n)
+    return msd, sem
+ 
+ 
+def ajustar_pesado(t, msd, sigma):
+    """Ajuste A*t^n + (v t)^2 pesado por las barras de error (se ignoran puntos sin error)."""
+    v = np.isfinite(sigma) & (sigma > 0)
+    p0 = [msd[-1] / t[-1], 1.0, 0]
+    popt, pcov = curve_fit(modelo, t[v], msd[v], p0=p0, sigma=sigma[v], absolute_sigma=True,
+                           bounds=([0, 0, -np.inf], [np.inf, 3, np.inf]))
+    err = np.sqrt(np.diag(pcov))
+    res = msd[v] - modelo(t[v], *popt)
+    chi2_red = np.sum((res / sigma[v])**2) / (v.sum() - len(popt))
+    r2 = 1 - np.sum(res**2) / np.sum((msd[v] - msd[v].mean())**2)
+    return popt, err, r2, chi2_red
+ 
+ 
+ok = ~np.isnan(MSD[k_sel])
+t_p = t_n[ok]
+msd_p = MSD[k_sel][ok]
+_, sem_c = msd_con_error(archivos[k_sel])
+sem_p = sem_c[:ok.sum()]                  # mismo recorte que los datos (hasta n_max)
+ 
+if ponderar:
+    popt_p, err_p, r_cuadrado_p, chi2_p = ajustar_pesado(t_p, msd_p, sem_p)
+else:
+    popt_p, err_p, r_cuadrado_p = ajustar(t_p, msd_p)
+    chi2_p = np.nan
+A_p, n_p, v_p = popt_p
+err_A_p, err_n_p, err_v_p = err_p
+ 
+print(f"\n--- Ajuste de la partícula [{k_sel}] {os.path.basename(archivos[k_sel])} ---")
+print(f"A = {A_p:.2f} ± {err_A_p:.2f}")
+print(f"n = {n_p:.2f} ± {err_n_p:.2f}")
+print(f"v = {v_p:.2f} ± {err_v_p:.2f}")
+print(f"R² = {r_cuadrado_p:.2f}")
+if ponderar:
+    print(f"χ² reducido = {chi2_p:.3g}")
+ 
+t_fit_p = np.linspace(0, t_p[-1], 300)
+ 
+fig_p, ax_p = plt.subplots(figsize=(6, 5))
+ax_p.errorbar(t_p, msd_p, yerr=np.nan_to_num(sem_p), fmt="o", color="#4CAF50", ms=4,
+              capsize=2, elinewidth=1, label=f"Datos (partícula {k_sel})")
+ax_p.plot(t_fit_p, modelo(t_fit_p, *popt_p), "k-", lw=2,
+          label=f"Ajuste: $A t^n + (v t)^2 $, A = {A_p:.2f} ± {err_A_p:.2f} , \nn = {n_p:.2f} ± {err_n_p:.2f} , v = {v_p:.2f} ± {err_v_p:.2f} \nR² = {r_cuadrado_p:.2f} , χ² reducido = {chi2_p:.2f}")
+ 
+ax_p.set_xlabel("Tiempo ( s )", fontweight="bold")
+ax_p.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
+if loglog:
+    ax_p.set_xscale("log")
+    ax_p.set_yscale("log")
+else:
+    ax_p.set_xlim(0, t_p[-1])
+    ax_p.set_ylim(bottom=0)
+ax_p.grid(alpha=0.3)
+ax_p.legend(fontsize=10, loc="best")
+fig_p.tight_layout()
+
+# --- GUARDAR EN LA CARPETA ---
+
+nombre_imagen = f"msd_particula_{k_sel}.png"
+ruta_guardado = os.path.join(carpeta, nombre_imagen)
+fig_p.savefig(ruta_guardado, dpi=300, bbox_inches="tight")
+print(f"Figura guardada en: {ruta_guardado}")
+
+plt.show()
+
+#%%
+plt.savefig(f"msd_particula_{particula}.png")
+
+ 
+
