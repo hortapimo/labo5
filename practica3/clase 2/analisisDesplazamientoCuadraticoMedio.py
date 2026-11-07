@@ -84,9 +84,9 @@ err_fit = err_c[mascara]
 
 
 # Elimina la fila cuyo índice es 0 (primera posición)
-tiempo_fit = tiempo[mascara][1:]
-MSD_fit = MSD[mascara][1:]
-err_fit = err[mascara][1:]
+tiempo_fit = tiempo[mascara][1:16]
+MSD_fit = MSD[mascara][1:16]
+err_fit = err[mascara][1:16]
 
 popt, pcov = curve_fit(modelo, tiempo_fit, MSD_fit, p0=[MSD_fit[-1] / tiempo_fit[-1], 1.0], 
                        sigma=err_fit, absolute_sigma=False)
@@ -108,7 +108,7 @@ print(f"A = {A_fit:.4f} ± {dA:.4f} | n = {n_fit:.3f} ± {dn:.3f}")
 
 #%% 
 fig, ax = plt.subplots(figsize=(7, 5))
-ax.errorbar(tiempo, MSD, yerr=err_c, fmt='o', mfc='none', mec='tab:blue', ecolor='tab:blue',
+ax.errorbar(tiempo_fit, MSD_fit, yerr=err_fit, fmt='o', mfc='none', mec='tab:blue', ecolor='tab:blue',
             ms=4, elinewidth=1, capsize=2, label=f'Datos (N={N})')
 ax.plot(tiempo_fit, modelo(tiempo_fit, *popt), '-', color='tab:red', lw=2.5,
         label=r'Ajuste')
