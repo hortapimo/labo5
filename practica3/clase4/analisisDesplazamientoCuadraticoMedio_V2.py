@@ -31,7 +31,7 @@ trayectoria = f.rastrear_particula_roi(
 )
 
 #%% Guardar trayectoria
-#trayectoria.to_csv(f'trayectoria_particula{nParticula}_video_{rutaVideo}.csv', index=False, encoding='utf-8')
+trayectoria.to_csv(f'trayectoria_particula{nParticula}_video_{rutaVideo}.csv', index=False, encoding='utf-8')
 
 #%% Superponer sobre el fotograma elegido
 aux =f.superponer_trayectoria_video(rutaVideo, trayectoria, diam, frame_muestra=0)
