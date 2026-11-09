@@ -6,13 +6,13 @@ plt.style.use('estiloGraficos.mplstyle')
 tiempo = np.array([5.1,5.1,7,5]) # s
 t_e = 0.2 # s
 aceleración = 0.005 * 1e3# um s**-2
-a_e = aceleración*0  * 1e3 # um s**-2
+a_e = aceleración*0.01# um s**-2
 velocidad = aceleración * tiempo # um s**-1
 v_e = np.sqrt(((tiempo*a_e)**2) + ((aceleración*t_e)**2))
 dist_px = 0.094 # um px**-1
 d_px_e = 0.005 # um px**-1
 diametro = np.array([31,33,34,34]) * dist_px # um
-diam_e = np.sqrt((4 * dist_px)**2 + (d_px_e)**2) # um; voy a probar a no ponerle error al diám que medimos
+diam_e = np.sqrt((0 * dist_px)**2 + (d_px_e)**2) # um; voy a probar a no ponerle error al diám que medimos
 print(diametro)
 print(diam_e) 
 print(diametro)
@@ -50,7 +50,7 @@ fig3.show()
 
 rho = 1e-3 * 1e-12 # kg um**-3
 area_p = np.pi * ((diametro*0.5)**2) # um**2
-areap_e = np.pi * diametro * diam_e # um**2
+areap_e = np.pi * diametro * 0.5 * diam_e # um**2
 f_d = 0.5 * c_d * rho * (velocidad**2) * area_p # uN
 print(f_d)
 d_cd = 0.5 * rho * (velocidad**2) * area_p
@@ -67,3 +67,10 @@ ax4.set_ylabel(r"$F_{arr}$ [pN]")
 ax4.legend()
 fig4.savefig("FuerzaArrastre.png")
 fig4.show()
+#%% voy a hacer una cuenta para ver por qué tenemos tanto error
+f_d2 = 3*np.pi*nu*velocidad*rho*diametro
+rel_vel = (v_e/velocidad) * 100
+rel_diam = (diam_e/diametro) * 100
+print(np.mean(rel_vel))
+print(np.mean(rel_diam))
+print(f_d2)
