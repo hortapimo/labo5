@@ -108,3 +108,38 @@ dF_dv = k * D_prom              # pN/(um/s)
 fp_e = np.sqrt(dF_dD**2 * var_D + dF_dv**2 * var_v)   # pN
 print(f"({f_p:.3f} +- {fp_e:.3f}) pN")
 print("Error relativo de F_prom = "f"{fp_e*100 / f_p:.1f} %")
+#%% figura de la velocidad y fuerza juntas
+x = np.array([1, 2, 3, 4])
+desfase = 0.05  # con esto separo los puntos
+
+fig5, ax5 = plt.subplots()
+color_v = 'C0' # Azul
+ax5.errorbar(x - desfase, velocidad, yerr=v_e, fmt="o", color=color_v, 
+             label=r"Datos $v_{max}$")
+ax5.set_xlabel("N° mediciones")
+ax5.set_ylabel(r"$v_{max}$ [$\mu$m $s^{-1}$]")#, color=color_v)
+ax5.set_ylim(23,37)
+
+#ax1.tick_params(axis='y')#, labelcolor=color_v)
+# Configuramos los números enteros en el eje X para que queden centrados
+ax5.set_xticks(x)
+ax5.set_xticklabels(["1", "2", "3", "4"])
+
+
+ax6 = ax5.twinx() # Crea el segundo eje compartiendo el X
+color_f = 'C1'    # Naranja
+ax6.errorbar(x + desfase, f_d, yerr=fd_e, fmt="o", color=color_f, 
+             label=r"Datos $F_{arr}$")
+ax6.set_ylabel(r"$F_{arr}$ [pN]")#, color=color_f)
+ax6.set_ylim(0.5,1.9)
+#ax6.tick_params(axis='y')#, labelcolor=color_f)
+
+# --- Leyenda Unificada ---
+# Extraemos las referencias de ambos ejes para armar un solo recuadro de leyenda
+lineas_1, etiquetas_1 = ax1.get_legend_handles_labels()
+lineas_2, etiquetas_2 = ax2.get_legend_handles_labels()
+ax5.legend(lineas_1 + lineas_2, etiquetas_1 + etiquetas_2, loc='best')
+
+fig5.tight_layout()
+fig5.savefig("VelocidadYFuerza.png")
+plt.show()
