@@ -11,6 +11,7 @@ patron = os.path.join(carpeta, "*.csv")
 
 fps = 15                                  # cuadros por segundo del video
 um_por_px = 0.09524703938865117           # micras por píxel (usá 1 para quedarte en píxeles)
+error_um_por_px = 0.005           
 n_max = 75                            # último paso (frame) hasta donde se grafica y se ajusta
 t_min = 2.5                               # FILTRO  IMPORTANTE: duración mínima (s) de una trayectoria para usarla
 solo_completas = False                    # True: usa solo las que llegan hasta n_max (ensamble fijo)
