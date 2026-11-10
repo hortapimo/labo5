@@ -12,8 +12,8 @@ patron = os.path.join(carpeta, "*.csv")
 fps = 15                                  # cuadros por segundo del video
 um_por_px = 0.09524703938865117           # micras por píxel (usá 1 para quedarte en píxeles)
 error_um_por_px = 0.005           
-n_max = 75                            # último paso (frame) hasta donde se grafica y se ajusta
-t_min = 2.5                               # FILTRO  IMPORTANTE: duración mínima (s) de una trayectoria para usarla
+n_max = 75                       # último paso (frame) hasta donde se grafica y se ajusta
+t_min = 2.5                        # FILTRO  IMPORTANTE: duración mínima (s) de una trayectoria para usarla
 solo_completas = False                    # True: usa solo las que llegan hasta n_max (ensamble fijo)
 unidad = "um"                             # "um" -> µm² ; "nm" -> nm² ; "px" -> px² (con um_por_px = 1)
 ajustar_cada_particula = True             # además del promedio, ajusta cada trayectoria
@@ -37,6 +37,7 @@ def msd_trayectoria(archivo):
     r2 = r2[1:]
     n = np.arange(1, len(r2) + 1)
     msd = np.cumsum(r2) / n
+    #msd=r2
     return t[1:], msd
 
 #%% Modelo y ajuste: MSD = A * t^n + (v t)^2
@@ -70,11 +71,14 @@ if n_max < n_min:
 
 # Filtrar: se descartan las trayectorias que se pierden antes de t_min
 msds, usados = [], []
+msd_min = 0.02 #Si en el tiempo final ni si quiera supero este valor se siospecha de que no es una particual sino mugre
 for archivo in archivos:
     _, msd_k = msd_trayectoria(archivo)
     if len(msd_k) < n_min:
         print(f"Descartada (dura {len(msd_k) / fps:.2f} s < {t_min} s): {os.path.basename(archivo)}")
     elif solo_completas and len(msd_k) < n_max:
+        print(f"Descartada (no llega a n_max = {n_max}): {os.path.basename(archivo)}")
+    elif msd_k[-1] < msd_min:#Agrego este filtro para particulas que no se mueven, sospecha de estar midiendo mugre
         print(f"Descartada (no llega a n_max = {n_max}): {os.path.basename(archivo)}")
     else:
         msds.append(msd_k)
