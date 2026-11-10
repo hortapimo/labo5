@@ -503,3 +503,4 @@ for j in range(len(nombres), len(axs_h)):
     fig_h.delaxes(axs_h[j])
 
 fig_h.tight_layout()
+
