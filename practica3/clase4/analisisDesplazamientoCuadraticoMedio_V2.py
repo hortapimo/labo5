@@ -19,6 +19,8 @@ minmass = 20000
 nframe = 0
 fig, ax, particulas = f.dibujarFrame(rutaVideo, nframe, diam, minmass)
 
+fig.savefig("particulas_prueba_de_deteccion.png", dpi=300, bbox_inches="tight")
+
 #%% Selección de partícula
 nParticula = 17
 x_inicial = particulas.loc[nParticula, 'x']

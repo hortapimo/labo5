@@ -7,7 +7,7 @@ import trackpy as tp
 
 #%% 1. CARGAR VIDEO Y CALIBRAR EN EL PRIMER FRAME
 # Coloca la ruta local a tu archivo de video en tu PC
-ruta_video = 'videoOtroGrupo.avi'
+ruta_video = 'sinLserGod1_1.avi'
 
 # Escala de calibración: micrómetros por píxel
 distancia_um = 0.1 * 1000
