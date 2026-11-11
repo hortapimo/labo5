@@ -593,7 +593,7 @@ ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=2,
          # (f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
          #        f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
 ax_b.plot([],[]," ", label=r"$n_2$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
-ax_b.set_ylabel(r"$msd$ [$\mu$m$^2$]")
+ax_b.set_ylabel(r"$MSD$ [$\mu$m$^2$]")
 if loglog:
     ax_b.set_xscale("log")
     ax_b.set_yscale("log")
@@ -618,19 +618,22 @@ fig_b.tight_layout()
 fig_b.savefig("msd_ensamble_bootstrap_ergo_presentacion.png")
 fig_b.show()
 #%%
+curva_ens = modelo(t_fit_b, *[0.15,1.5,0.00,0.1])
 fig_b, ax_b = plt.subplots()
 for k in range(len(archivos)):
     ax_b.plot(t_plot, MSD_plot[k], color="C0", linewidth=1, alpha=0.85,
               label="7 trayectorias" if k == 0 else None, zorder=1)
 ax_b.errorbar(t_plot, msd_prom_plot, fmt=".",color="C1", linewidth=2.5, label="Trayectoria promedio", zorder=2)
 ax_b.fill_between(t_fit_b, banda_lo, banda_hi, color="gray", alpha=0.35, label="Incerteza (i.c. 68 %)")
-ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=2,
-          label=r"$\chi^2_{\nu}$ = "f"{chi2_r:.1f} | P = {p_val:.1f}", zorder=3)
+ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=3, zorder=3, label="Ajuste de la partícula")#,
+          #label=r"$\chi^2_{\nu}$ = "f"{chi2_r:.1f} | P = {p_val:.1f}", zorder=3)
          # (f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
          #        f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
-ax_b.plot([],[]," ", label=r"$n_2$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
+ax_b.plot(t_fit_b, curva_ens, c="C4", lw=3,
+          label="Ajuste obtenido del ensamble", zorder=3)
+#ax_b.plot([],[]," ", label=r"$n_2$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
 ax_b.set_xlabel("t [s]")
-ax_b.set_ylabel(r"$msd$ [$\mu$m$^2$]")
+ax_b.set_ylabel(r"$MSD$ [$\mu$m$^2$]")
 if loglog:
     ax_b.set_xscale("log")
     ax_b.set_yscale("log")
@@ -640,7 +643,7 @@ else:
 ax_b.grid(alpha=0.3)
 ax_b.legend()
 fig_b.tight_layout()
-fig_b.savefig("msd_ensamble_bootstrap_ergo_informe.png")
+fig_b.savefig("msd_ensamble_bootstrap_ergo_presentacion_def.png")
 fig_b.show()
 print(f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
       f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C)
