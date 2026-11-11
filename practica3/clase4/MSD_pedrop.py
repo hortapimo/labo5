@@ -592,7 +592,7 @@ ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=2,
           label=r"$\chi^2_{\nu}$ = "f"{chi2_r:.1f} | P = {p_val:.1f}", zorder=3)
          # (f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
          #        f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
-ax_b.plot([],[]," ", label=r"$n_1$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
+ax_b.plot([],[]," ", label=r"$n_2$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
 ax_b.set_ylabel(r"$msd$ [$\mu$m$^2$]")
 if loglog:
     ax_b.set_xscale("log")
@@ -628,7 +628,7 @@ ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=2,
           label=r"$\chi^2_{\nu}$ = "f"{chi2_r:.1f} | P = {p_val:.1f}", zorder=3)
          # (f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
          #        f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
-ax_b.plot([],[]," ", label=r"$n_1$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
+ax_b.plot([],[]," ", label=r"$n_2$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
 ax_b.set_xlabel("t [s]")
 ax_b.set_ylabel(r"$msd$ [$\mu$m$^2$]")
 if loglog:
