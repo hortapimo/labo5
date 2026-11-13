@@ -507,4 +507,138 @@ for j in range(len(nombres), len(axs_h)):
     fig_h.delaxes(axs_h[j])
 
 fig_h.tight_layout()
+#%% añado figuras para el informe, unificando el formato. hago que el intervalo sea del 68%
+plt.style.use('estiloGraficos.mplstyle')
+import warnings
+n_boot = 1000                  # cantidad de remuestreos
+semilla = 0                    # para que el resultado sea reproducible
+guardar_figuras = True
 
+rng = np.random.default_rng(semilla)
+N_part = MSD.shape[0]
+
+params_boot = []
+for b in range(n_boot):
+    idx = rng.integers(0, N_part, N_part)                      # sorteo de partículas con reemplazo
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)   # pasos sin ninguna partícula viva
+        msd_b = np.nanmean(MSD[idx], axis=0)
+    val = np.isfinite(msd_b)
+    try:
+        p_b, _, _ = ajustar(t_n[val], msd_b[val])
+        params_boot.append(p_b)
+    except Exception:
+        pass                                                   # remuestreo cuyo ajuste no converge
+params_boot = np.array(params_boot)
+params_boot[:, 2] = np.abs(params_boot[:, 2])                  # v entra al cuadrado: solo |v| tiene sentido
+
+nombres = ["A", "n", "v"] + (["C"] if usar_offset else [])
+valores = [A_fit, n_fit, abs(v_fit)] + ([C_fit] if usar_offset else [])   # estimación con el ensamble completo
+P_LO, P_HI = 50 - 68.27/2, 50 + 68.27/2     # 15.865 y 84.135
+
+print(f"\n--- Bootstrap ({len(params_boot)} de {n_boot} remuestreos con ajuste válido) ---")
+stats_boot = []
+for i, nombre in enumerate(nombres):
+    p_lo, p50, p_hi = np.percentile(params_boot[:, i], [P_LO, 50, P_HI])
+    err_inf = p50 - p_lo
+    err_sup = p_hi - p50
+    err_sim = (p_hi - p_lo) / 2          # semiancho del intervalo 68 %: equivale a 1σ
+    stats_boot.append((p_lo, p_hi, err_sim))
+    print(f"{nombre} = {valores[i]:.4g} ± {err_sim:.2g}  (semiancho 68 % c.l.)"
+          f" | mediana {p50:.4g} (-{err_inf:.2g}, +{err_sup:.2g})")
+#%%
+# Banda de incertidumbre de la curva ajustada (68 %, ±1σ)
+t_fit_b = np.linspace(0, t_n[-1], 200)
+curvas_b = np.array([modelo(t_fit_b, *p) for p in params_boot])
+banda_lo, banda_hi = np.percentile(curvas_b, [P_LO, P_HI], axis=0)
+
+#%% Gráfico del ensamble con el ajuste y su banda bootstrap
+from scipy import stats
+
+# Incerteza por punto: error estándar del MSD promedio en cada paso temporal
+n_vivas  = np.sum(np.isfinite(MSD), axis=0)
+msd_prom = np.nanmean(MSD, axis=0)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", category=RuntimeWarning)
+    sigma = np.nanstd(MSD, axis=0, ddof=1) / np.sqrt(n_vivas)
+
+ok = np.isfinite(msd_prom) & np.isfinite(sigma) & (sigma > 0) & (n_vivas > 1)
+t_ok, y_ok, s_ok = t_n[ok], msd_prom[ok], sigma[ok]
+
+y_mod  = modelo(t_ok, *popt)
+resid  = y_ok - y_mod                  # residuos absolutos [µm²]
+resid_n = resid / s_ok                 # residuos normalizados (en unidades de σ)
+
+n_par  = len(popt)
+gl     = len(t_ok) - n_par             # grados de libertad
+chi2   = np.sum(resid_n**2)
+chi2_r = chi2 / gl
+p_val  = stats.chi2.sf(chi2, gl)       # P(χ² ≥ valor observado)
+
+print(f"χ² = {chi2:.2f} | gl = {gl} | χ²_red = {chi2_r:.2f} | p-valor = {p_val:.3g}")
+
+#%%
+fig_b, (ax_b, ax_r) = plt.subplots(
+    2, 1, figsize=(8, 7), sharex=True,
+    gridspec_kw={"height_ratios": [3, 1], "hspace": 0.05})
+for k in range(len(archivos)):
+    ax_b.plot(t_plot, MSD_plot[k], color="C0", linewidth=1, alpha=0.85,
+              label="14 trayectorias" if k == 0 else None, zorder=1)
+ax_b.errorbar(t_plot, msd_prom_plot, fmt=".",color="C1", linewidth=2.5, label="Trayectoria promedio", zorder=2)
+ax_b.fill_between(t_fit_b, banda_lo, banda_hi, color="gray", alpha=0.35, label="Incerteza (i.c. 68 %)")
+ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=2,
+          label=r"$\chi^2_{\nu}$ = "f"{chi2_r:.1f} | P = {p_val:.1f}", zorder=3)
+         # (f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
+         #        f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
+ax_b.plot([],[]," ", label=r"$n_1$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
+ax_b.set_ylabel(r"$MSD$ [$\mu$m$^2$]")
+if loglog:
+    ax_b.set_xscale("log")
+    ax_b.set_yscale("log")
+else:
+    ax_b.set_xlim(0,5)
+    ax_b.set_ylim(0,4)
+ax_b.grid(alpha=0.3)
+ax_b.legend()
+ax_r.axhline(0, color="k", lw=1)
+ax_r.fill_between(t_fit_b,
+                  banda_lo - modelo(t_fit_b, *popt),
+                  banda_hi - modelo(t_fit_b, *popt),
+                  color="gray", alpha=0.35, label="IC 68 %")    # banda bootstrap respecto del ajuste
+ax_r.errorbar(t_ok, resid, fmt="o", ms=3, color="C1",
+              ecolor="C3", elinewidth=1, capsize=2)
+ax_r.set_xlabel("t [s]")
+ax_r.set_ylabel(r"Residuos [$\mu$m$^2$]")
+ax_r.grid(alpha=0.3)
+ax_b.legend(loc="best")
+
+fig_b.tight_layout()
+fig_b.savefig("msd_ensamble_bootstrap_presentacion.png")
+fig_b.show()
+#%%
+fig_b, ax_b = plt.subplots()
+for k in range(len(archivos)):
+    ax_b.plot(t_plot, MSD_plot[k], color="C0", linewidth=1, alpha=0.85,
+              label="14 trayectorias" if k == 0 else None, zorder=1)
+ax_b.errorbar(t_plot, msd_prom_plot, fmt=".",color="C1", linewidth=2.5, label="Trayectoria promedio", zorder=2)
+ax_b.fill_between(t_fit_b, banda_lo, banda_hi, color="gray", alpha=0.35, label="Incerteza (i.c. 68 %)")
+ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=3,zorder=3, label="Ajuste del ensamble")
+#          label=r"$\chi^2_{\nu}$ = "f"{chi2_r:.1f} | P = {p_val:.1f}", zorder=3)
+         # (f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
+         #        f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
+#ax_b.plot([],[]," ", label=r"$n_1$ "f"= {n_fit:.1f} ± {stats_boot[1][2]:.1f}")
+ax_b.set_xlabel("t [s]")
+ax_b.set_ylabel(r"$MSD$ [$\mu$m$^2$]")
+if loglog:
+    ax_b.set_xscale("log")
+    ax_b.set_yscale("log")
+else:
+    ax_b.set_xlim(0,5)
+    ax_b.set_ylim(0,4)
+ax_b.grid(alpha=0.3)
+ax_b.legend()
+fig_b.tight_layout()
+fig_b.savefig("msd_ensamble_bootstrap_informe.png")
+fig_b.show()
+print(f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
+      f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C)

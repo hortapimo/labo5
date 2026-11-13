@@ -2,13 +2,14 @@ import numpy as np
 
 # calculo viscosidad
 
-A = 0.15e-12          # m²/s  (0.15 µm²/s)
-D = A / 2 #ACLARAR ESTO, NO ES A / 4!!!!
 k_b = 1.380649e-23
-T = 293.15
-R_h = 1.5e-6
-aux_1 = (k_b * T)
-aux_2 = (6 * np.pi * R_h * D)
-etha = aux_1 / aux_2
+T, dT = 293.15, 1.0
+R_h, dR = 1.5e-6, 5e-7
+A, dA = 0.15e-12, 0.03e-12
+D = A / 2
 
-print(f"{etha:.3g} Pa·s")   # ≈ 1.9e-3 Pa·s = 1.9 mPa·s
+eta = k_b * T / (6 * np.pi * R_h * D)
+rel = np.sqrt((dT/T)**2 + (dR/R_h)**2 + (dA/A)**2)
+d_eta = eta * rel
+
+print(f"eta = {eta:.3g} ± {d_eta:.2g} Pa·s  (error relativo {rel:.2f})")

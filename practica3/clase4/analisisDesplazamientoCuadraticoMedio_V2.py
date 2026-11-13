@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import trackpy as tp
 
 #%% Configuración
+plt.style.use("estiloGraficos.mplstyle")
 rutaVideo = "sinLserGod1_1.avi"
 escala = f.obtener_escala()
 
@@ -37,3 +38,40 @@ trayectoria.to_csv(f'trayectoria_particula{nParticula}_video_{rutaVideo}.csv', i
 
 #%% Superponer sobre el fotograma elegido
 aux =f.superponer_trayectoria_video(rutaVideo, trayectoria, diam, frame_muestra=0)
+#%% hago figura prolija para el informe
+minmass = 20000
+nframe = 0
+# Parámetros de detección
+d_micro = 4.01  # µm
+diam = int(d_micro // escala)
+if diam % 2 == 0:
+    diam += 1
+frame = nframe
+frame = f.obtener_frame("sinLserGod1_1.avi", nframe)
+frame = f.preprocesar_frame(frame, diam)
+
+particulas = tp.locate(frame, diameter=diam, minmass=minmass, invert=False).reset_index(drop=True)
+fig, axes = plt.subplots(figsize=(8, 8))
+tp.annotate(particulas, frame, ax=axes)
+for i, row in particulas.iterrows():
+    axes.text(
+        row['x'], row['y'] - (diam / 2) - 2,
+        str(i),
+        color='yellow',
+        fontsize=9,
+        weight='bold',
+        ha='center', va='bottom'
+    )
+axes.plot([], [], marker='o', color='none', markeredgecolor='red', markersize=10, label='Partículas detectadas')
+axes.set_xlim(150,1250)
+axes.set_ylim(0,1000)
+axes.set_xlabel("x [px]")
+axes.set_ylabel("y [px]")
+axes.legend()
+fig.tight_layout()
+fig.savefig("DeteccionParticulasInforme")
+plt.show()
+
+
+
+
