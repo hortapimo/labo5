@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 #%% Configuración
-carpeta = "trayectoriasDivididas/sub_trayectorias_7s"                  # carpeta con los .csv del ensamble
+carpeta = "trayectoriasDivididas/sub_trayectorias_7_archivo9"                  # carpeta con los .csv del ensamble
 patron = os.path.join(carpeta, "*.csv")
 
 fps = 15                                  # cuadros por segundo del video
 um_por_px = 0.09524703938865117           # micras por píxel (usá 1 para quedarte en píxeles)
 error_um_por_px = 0.005           
-n_max = 100                       # último paso (frame) hasta donde se grafica y se ajusta
-t_min = 4                        # FILTRO  IMPORTANTE: duración mínima (s) de una trayectoria para usarla
+n_max = 69                   # último paso (frame) hasta donde se grafica y se ajusta
+t_min = 3                        # FILTRO  IMPORTANTE: duración mínima (s) de una trayectoria para usarla
 solo_completas = False                    # True: usa solo las que llegan hasta n_max (ensamble fijo)
 unidad = "um"                             # "um" -> µm² ; "nm" -> nm² ; "px" -> px² (con um_por_px = 1)
 ajustar_cada_particula = True             # además del promedio, ajusta cada trayectoria
@@ -161,65 +161,6 @@ fig.tight_layout()
 plt.show()
 
 #%% Guardar resultados
-pd.DataFrame({"paso": pasos, "t_s": t_n, "msd_promedio": msd_prom, "n_particulas": n_part}).to_csv(
-    "msd_ensamble.csv", index=False, encoding="utf-8")
-fig.savefig("msd_ensamble.png", dpi=200)
-
-
-#%% Partícula individual: datos de MSD y ajuste con deriva
-# Elegí la partícula por su número en la lista (0, 1, 2, ...) o por un texto del nombre
-# del archivo (por ejemplo "particula17"). Solo se pueden elegir las que pasaron el filtro.
-"""
-particula = 2
- 
-print("\n--- Partículas disponibles ---")
-for k, archivo in enumerate(archivos):
-    print(f"[{k}] {os.path.basename(archivo)}")
- 
-if isinstance(particula, str):
-    coincidencias = [k for k, archivo in enumerate(archivos) if particula in os.path.basename(archivo)]
-    if not coincidencias:
-        raise ValueError(f"Ningún archivo utilizado contiene '{particula}' en su nombre.")
-    k_sel = coincidencias[0]
-else:
-    if not 0 <= particula < len(archivos):
-        raise ValueError(f"particula debe estar entre 0 y {len(archivos) - 1}.")
-    k_sel = particula
- 
-ok = ~np.isnan(MSD[k_sel])
-t_p = t_n[ok]
-msd_p = MSD[k_sel][ok]
- 
-popt_p, err_p, r_cuadrado_p = ajustar(t_p, msd_p)
-A_p, n_p, v_p = popt_p
-err_A_p, err_n_p, err_v_p = err_p
- 
-print(f"\n--- Ajuste de la partícula [{k_sel}] {os.path.basename(archivos[k_sel])} ---")
-print(f"A = {A_p:.4g} ± {err_A_p:.2g}")
-print(f"n = {n_p:.4g} ± {err_n_p:.2g}")
-print(f"v = {v_p:.4g} ± {err_v_p:.2g}")
-print(f"R² = {r_cuadrado_p:.5f}")
- 
-t_fit_p = np.linspace(0, t_p[-1], 300)
- 
-fig_p, ax_p = plt.subplots(figsize=(6, 5))
-ax_p.plot(t_p, msd_p, "o", color="#4CAF50", ms=4, label=f"Datos (partícula {k_sel})")
-ax_p.plot(t_fit_p, modelo(t_fit_p, *popt_p), "k-", lw=2,
-          label=f"Ajuste: $A t^n + (v t)^2 $, A = {A_p:.4g} ± {err_A_p:.2g} , \nn = {n_p:.2f} ± {err_n_p:.2f} , v = {v_p:.2f} ± {err_v_p:.2f} \nR² = {r_cuadrado_p:.5f}")
- 
-ax_p.set_xlabel("Tiempo ( s )", fontweight="bold")
-ax_p.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
-if loglog:
-    ax_p.set_xscale("log")
-    ax_p.set_yscale("log")
-else:
-    ax_p.set_xlim(0, t_p[-1])
-    ax_p.set_ylim(bottom=0)
-ax_p.grid(alpha=0.3)
-ax_p.legend(fontsize=10, loc="best")
-fig_p.tight_layout()
-plt.show()
-"""
 
 #%% Partícula individual: datos de MSD y ajuste con deriva
 # Elegí la partícula por su número en la lista (0, 1, 2, ...) o por un texto del nombre
@@ -310,7 +251,7 @@ ax_p.plot(t_fit_p, modelo(t_fit_p, *popt_p), "k-", lw=2,
           label=f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_p:.2f} ± {err_A_p:.2f} , \nn = {n_p:.2f} ± {err_n_p:.2f} , v = {v_p:.2f} ± {err_v_p:.2f} , C = {C_p:.2f} ± {err_C_p:.2f} \nR² = {r_cuadrado_p:.2f} , χ² reducido = {chi2_p:.2f}")
  
 ax_p.set_xlabel("Tiempo ( s )", fontweight="bold")
-ax_p.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
+ax_p.set_ylabel(r"MSD ($\mu$m$^2$)", fontweight="bold")
 if loglog:
     ax_p.set_xscale("log")
     ax_p.set_yscale("log")
@@ -329,10 +270,6 @@ fig_p.savefig(ruta_guardado, dpi=300, bbox_inches="tight")
 print(f"Figura guardada en: {ruta_guardado}")
 
 plt.show()
-
-#%%
-plt.savefig(f"msd_particula_{particula}.png")
-
 
 
 #%% MSD promedio con barras de error (error estándar entre partículas) y ajuste pesado
@@ -379,7 +316,7 @@ ax_e.plot(t_fit_e, modelo(t_fit_e, *popt_e), "k-", lw=2,
           label=f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_e:.2f} ± {err_A_e:.2f} , \nn = {n_e:.2f} ± {err_n_e:.2f} , v = {v_e:.2f} ± {err_v_e:.2f} , C = {C_e:.2f} ± {err_C_e:.2f} \nχ² reducido = {chi2_e:.2f}")
 
 ax_e.set_xlabel("Tiempo ( s )", fontweight="bold")
-ax_e.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
+ax_e.set_ylabel(r"MSD($\mu$m$^2$)", fontweight="bold")
 if loglog:
     ax_e.set_xscale("log")
     ax_e.set_yscale("log")
@@ -432,7 +369,7 @@ stats_boot = []
 for i, nombre in enumerate(nombres):
     p2, p16, p50, p84, p97 = np.percentile(params_boot[:, i], [2.5, 16, 50, 84, 97.5])
     std = params_boot[:, i].std(ddof=1)
-    stats_boot.append((p2, p97, std))
+    stats_boot.append((p16, p84, std))
     print(f"{nombre} = {valores[i]:.4g} ± {std:.2g}  (desv. estándar bootstrap)"
           f" | mediana {p50:.4g} | 68%: [{p16:.4g}, {p84:.4g}] | 95%: [{p2:.4g}, {p97:.4g}]")
 
@@ -448,14 +385,15 @@ fig_b, ax_b = plt.subplots(figsize=(6, 5))
 for k in range(len(archivos)):
     ax_b.plot(t_plot, MSD_plot[k], color="#4CAF50", linewidth=1, ms=2, alpha=0.85,
               label=f"Partículas (Total = {len(archivos)})" if k == 0 else None)
-ax_b.plot(t_plot, msd_prom_plot, color="red", linewidth=2.5, label="Promedio")
-ax_b.fill_between(t_fit_b, banda_lo, banda_hi, color="gray", alpha=0.35, label="Banda bootstrap (95%)")
+#ax_b.plot(t_plot, msd_prom_plot, color="red", linewidth=2.5, label="Promedio")
+ax_b.fill_between(t_fit_b, banda_lo, banda_hi, color="gray", alpha=0.35, label=f"Banda error (1 $\\sigma $)")
 ax_b.plot(t_fit_b, modelo(t_fit_b, *popt), "k-", lw=2,
-          label=(f"Ajuste: $A t^n + (v t)^2 + C $, A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , \n"
-                 f"n = {n_fit:.2f} ± {stats_boot[1][2]:.2f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
-
+          label=(f"Ajuste datos: $A t^n + (v t)^2 + C $,\n A = {A_fit:.2f} ± {stats_boot[0][2]:.2f} , "
+                 f"n = {n_fit:.1f} ± {stats_boot[1][2]:.1f} , v = {abs(v_fit):.2f} ± {stats_boot[2][2]:.2f}" + txt_C))
+curvaEnsable= modelo(t_fit_b, A_=0.15,n_=1.45, v_=0,C_=0.07)
+ax_b.plot(t_fit_b,curvaEnsable,label="Ajuste obtenido del ensable \n A=$0.15 \\pm 0.07$, n = $1.5\\pm 0.3$, v =$0.00\\pm 0.02$, C=$0.1\\pm 0.3$")
 ax_b.set_xlabel("Tiempo ( s )", fontweight="bold")
-ax_b.set_ylabel(r"Mean Squared Displacement ($\mu$m$^2$)", fontweight="bold")
+ax_b.set_ylabel(r"MSD ($\mu$m$^2$)", fontweight="bold")
 if loglog:
     ax_b.set_xscale("log")
     ax_b.set_yscale("log")
@@ -464,47 +402,3 @@ else:
     ax_b.set_ylim(bottom=0)
 ax_b.grid(alpha=0.3)
 ax_b.legend(fontsize=10, loc="best")
-fig_b.tight_layout()
-"""
-# Histogramas de los parámetros bootstrap
-fig_h, axs_h = plt.subplots(1, len(nombres), figsize=(4 * len(nombres), 4))
-for i, (nombre, ax_h) in enumerate(zip(nombres, axs_h)):
-    ax_h.hist(params_boot[:, i], bins=30, color="#4CAF50", alpha=0.8)
-    ax_h.axvline(valores[i], color="k", lw=2, label="Ajuste ensamble")
-    ax_h.axvline(stats_boot[i][0], color="k", ls="--", lw=1.2, label="IC 95%")
-    ax_h.axvline(stats_boot[i][1], color="k", ls="--", lw=1.2)
-    ax_h.set_xlabel(nombre if nombre != "v" else "|v|", fontweight="bold")
-    ax_h.set_ylabel("Frecuencia", fontweight="bold")
-    ax_h.grid(alpha=0.3)
-axs_h[0].legend(fontsize=9)
-fig_h.tight_layout()
-
-if guardar_figuras:
-    fig_b.savefig("msd_ensamble_bootstrap.png", dpi=300, bbox_inches="tight")
-    fig_h.savefig("bootstrap_parametros.png", dpi=300, bbox_inches="tight")
-    print("Figuras guardadas: msd_ensamble_bootstrap.png, bootstrap_parametros.png")
-
-plt.show()
-
-"""
-# Histogramas de los parámetros bootstrap en grilla 2x2
-fig_h, axs_h = plt.subplots(2, 2, figsize=(8, 7))
-axs_h = axs_h.flatten()  # Agana la matriz 2x2 para iterar con un solo índice
-
-for i, (nombre, ax_h) in enumerate(zip(nombres, axs_h)):
-    ax_h.hist(params_boot[:, i], bins=30, color="#4CAF50", alpha=0.8)
-    ax_h.axvline(valores[i], color="k", lw=2, label="Ajuste ensamble")
-    ax_h.axvline(stats_boot[i][0], color="k", ls="--", lw=1.2, label="IC 95%")
-    ax_h.axvline(stats_boot[i][1], color="k", ls="--", lw=1.2)
-    ax_h.set_xlabel(nombre if nombre != "v" else "|v|", fontweight="bold")
-    ax_h.set_ylabel("Frecuencia", fontweight="bold")
-    ax_h.grid(alpha=0.3)
-    if i == 0:
-        ax_h.legend(fontsize=9)
-
-# Si por alguna razón nombres tuviera menos de 4 elementos, ocultamos los subplots sobrantes
-for j in range(len(nombres), len(axs_h)):
-    fig_h.delaxes(axs_h[j])
-
-fig_h.tight_layout()
-

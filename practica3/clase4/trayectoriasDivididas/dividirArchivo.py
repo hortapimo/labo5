@@ -93,12 +93,12 @@ def dividir_csv_por_filas(
 # --- EJEMPLO DE USO ---
 if __name__ == "__main__":
   # Modificá la ruta al archivo con tus datos:
-  ARCHIVO_CSV = "trayectoria_particula17_video_sinLserGod1_1.avi.csv"
+  ARCHIVO_CSV = "trayectoria_particula9_video_sinLserGod1_1.avi.csv"
 
   dividir_csv_por_filas(
       archivo_entrada=ARCHIVO_CSV,
-      n_partes=10,  # Divide en n=12 partes de longitud L = N / 12
-      carpeta_salida="sub_trayectorias_5s",
+      n_partes=7,  # Divide en n=12 partes de longitud L = N / 12
+      carpeta_salida="sub_trayectorias_7_archivo9",
       separador=",",  # Si tu CSV usa punto y coma como separador, cambialo a ';'
       reajustar_origen=False,  # Cambiá a True si querés restar (x0, y0) al inicio de cada tramo
   )
