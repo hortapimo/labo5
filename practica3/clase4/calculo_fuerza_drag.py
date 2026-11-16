@@ -156,6 +156,10 @@ plt.show()
 #%% Fuerzas individuales: F_i = 3*pi*eta*v_i*D_i
 eta   = 0.9e-3 * 1e-6    # kg um^-1 s^-1  (0,9 mPa s)
 eta_e = 0.3e-3 * 1e-6    # kg um^-1 s^-1  (0,3 mPa s)
+eta   = 1.9e-3 * 1e-6    # kg um^-1 s^-1  (0,9 mPa s)
+eta_e = 0.7e-3 * 1e-6    # kg um^-1 s^-1  (0,3 mPa s)
+# eta   = 1 * 1e-6    # kg um^-1 s^-1  (0,9 mPa s)
+# eta_e = 0* 1e-6    # kg um^-1 s^-1  (0,3 mPa s)
 k = 3*np.pi*eta * 1e6    # conversión a pN incluida (una sola vez)
 
 f_d = k * velocidad * diametro                                   # pN
@@ -195,7 +199,11 @@ ax5.errorbar(x - desfase, velocidad, yerr=v_e, fmt="o", color=color_v,
 ax5.set_xlabel("N° mediciones")
 ax5.set_ylabel(r"$v_{max}$ [$\mu$m $s^{-1}$]")#, color=color_v)
 ax5.set_ylim(23,37)
+ax5.set_ylim(21,39)
 
+
+ticks_v = np.arange(22, 39, 2)
+ax5.set_yticks(ticks_v)
 ax5.tick_params(axis='y')#, labelcolor=color_v)
 # Configuramos los números enteros en el eje X para que queden centrados
 ax5.set_xticks(x)
@@ -207,13 +215,17 @@ color_f = 'C1'    # Naranja
 ax6.errorbar(x + desfase, f_d, yerr=fd_e, fmt="o", color=color_f,
               label=r"Datos $F_{arr}$")
 ax6.set_ylabel(r"$F_{arr}$ [pN]")#, color=color_f)
-ax6.set_ylim(0.1, 1.5)
-
+#ax6.set_ylim(0.1, 1.5)
+ax6.set_ylim(0.65, 2.85)
+fracciones = (ticks_v - 21) / (39 - 21)
+ticks_f = 0.65 + fracciones * (2.85 - 0.65)
+ax6.set_yticks(ticks_f)
+ax6.set_yticklabels([f"{val:.2f}" for val in ticks_f])
 # --- Leyenda Unificada ---
 # Extraemos las referencias de ambos ejes para armar un solo recuadro de leyenda
 lineas_1, etiquetas_1 = ax5.get_legend_handles_labels()
 lineas_2, etiquetas_2 = ax6.get_legend_handles_labels()
-ax5.legend(lineas_1 + lineas_2, etiquetas_1 + etiquetas_2)
+ax5.legend(lineas_1 + lineas_2, etiquetas_1 + etiquetas_2, loc="upper left")
 
 fig5.tight_layout()
 fig5.savefig("VelocidadYFuerza.png")
