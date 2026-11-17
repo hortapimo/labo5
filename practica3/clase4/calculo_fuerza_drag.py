@@ -99,6 +99,7 @@ n = len(velocidad)
 n = 1
 k = 3*np.pi*nu*rho * 1e6        # conversión a pN incluida (una sola vez)
 
+
 v_prom = np.mean(velocidad)     # um/s
 D_prom = np.mean(diametro)      # um
 f_p = k * v_prom * D_prom       # pN
@@ -146,6 +147,85 @@ ax6.tick_params(axis='y')#, labelcolor=color_f)
 lineas_1, etiquetas_1 = ax5.get_legend_handles_labels()
 lineas_2, etiquetas_2 = ax6.get_legend_handles_labels()
 ax5.legend(lineas_1 + lineas_2, etiquetas_1 + etiquetas_2, loc='best')
+
+fig5.tight_layout()
+fig5.savefig("VelocidadYFuerza.png")
+plt.show()
+
+#%%
+#%% Fuerzas individuales: F_i = 3*pi*eta*v_i*D_i
+eta   = 0.9e-3 * 1e-6    # kg um^-1 s^-1  (0,9 mPa s)
+eta_e = 0.3e-3 * 1e-6    # kg um^-1 s^-1  (0,3 mPa s)
+eta   = 1.9e-3 * 1e-6    # kg um^-1 s^-1  (0,9 mPa s)
+eta_e = 0.7e-3 * 1e-6    # kg um^-1 s^-1  (0,3 mPa s)
+# eta   = 1 * 1e-6    # kg um^-1 s^-1  (0,9 mPa s)
+# eta_e = 0* 1e-6    # kg um^-1 s^-1  (0,3 mPa s)
+k = 3*np.pi*eta * 1e6    # conversión a pN incluida (una sola vez)
+
+f_d = k * velocidad * diametro                                   # pN
+
+# estadístico por punto (independiente entre mediciones)
+eps_est_i = np.sqrt((pix_e/pixeles)**2 + (t_e/tiempo)**2)
+fd_e_est  = f_d * eps_est_i                                      # pN
+
+# sistemático común: viscosidad, calibración y aceleración
+eps_sist  = np.sqrt((eta_e/eta)**2 + (d_px_e/dist_px)**2 + (a_e/aceleración)**2)
+fd_e_sist = f_d * eps_sist                                       # pN
+
+fd_e = np.sqrt(fd_e_est**2 + fd_e_sist**2)                       # pN, total
+print(f_d); print(fd_e_est); print(fd_e_sist); print(fd_e)
+print(np.mean(fd_e/f_d * 100))
+#%% Promedio de las fuerzas
+n = len(f_d)
+n = 100
+f_p = np.mean(f_d)                                # pN
+fp_e_est  = np.sqrt(np.sum(fd_e_est**2)) / n      # baja como 1/sqrt(n)
+fp_e_sist = f_p * eps_sist                        # no baja con n
+fp_e = np.sqrt(fp_e_est**2 + fp_e_sist**2)
+print(f"({f_p:.3f} +- {fp_e:.3f}) pN  ->  {fp_e/f_p *100:.1f} %")
+print(f"estadístico: {fp_e_est:.3f} pN ({fp_e_est/f_p*100:.1f} %), "
+      f"sistemático: {fp_e_sist:.3f} pN ({eps_sist*100:.1f} %)")
+
+#%% Figura (reemplaza la parte de ax6)
+
+
+x = np.array([1, 2, 3, 4])
+desfase = 0.05  # con esto separo los puntos
+
+fig5, ax5 = plt.subplots()
+color_v = 'C0' # Azul
+ax5.errorbar(x - desfase, velocidad, yerr=v_e, fmt="o", color=color_v, 
+             label=r"Datos $v_{max}$")
+ax5.set_xlabel("N° mediciones")
+ax5.set_ylabel(r"$v_{max}$ [$\mu$m $s^{-1}$]")#, color=color_v)
+ax5.set_ylim(23,37)
+ax5.set_ylim(21,39)
+
+
+ticks_v = np.arange(22, 39, 2)
+ax5.set_yticks(ticks_v)
+ax5.tick_params(axis='y')#, labelcolor=color_v)
+# Configuramos los números enteros en el eje X para que queden centrados
+ax5.set_xticks(x)
+ax5.set_xticklabels(["1", "2", "3", "4"])
+
+
+ax6 = ax5.twinx() # Crea el segundo eje compartiendo el X
+color_f = 'C1'    # Naranja
+ax6.errorbar(x + desfase, f_d, yerr=fd_e, fmt="o", color=color_f,
+              label=r"Datos $F_{arr}$")
+ax6.set_ylabel(r"$F_{arr}$ [pN]")#, color=color_f)
+#ax6.set_ylim(0.1, 1.5)
+ax6.set_ylim(0.65, 2.85)
+fracciones = (ticks_v - 21) / (39 - 21)
+ticks_f = 0.65 + fracciones * (2.85 - 0.65)
+ax6.set_yticks(ticks_f)
+ax6.set_yticklabels([f"{val:.2f}" for val in ticks_f])
+# --- Leyenda Unificada ---
+# Extraemos las referencias de ambos ejes para armar un solo recuadro de leyenda
+lineas_1, etiquetas_1 = ax5.get_legend_handles_labels()
+lineas_2, etiquetas_2 = ax6.get_legend_handles_labels()
+ax5.legend(lineas_1 + lineas_2, etiquetas_1 + etiquetas_2, loc="upper left")
 
 fig5.tight_layout()
 fig5.savefig("VelocidadYFuerza.png")
