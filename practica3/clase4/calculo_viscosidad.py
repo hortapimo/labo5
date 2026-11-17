@@ -5,7 +5,7 @@ import numpy as np
 k_b = 1.380649e-23
 T, dT = 293.15, 1.0
 R_h, dR = 1.5e-6, 5e-7
-A, dA = 0.15e-12, 0.03e-12
+A, dA = 0.32e-12, 0.03e-12
 D = A / 2
 
 eta = k_b * T / (6 * np.pi * R_h * D)

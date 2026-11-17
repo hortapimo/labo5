@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-
-
+import matplotlib.pyplot as plt
+plt.style.use('estiloGraficos.mplstyle')
 fps = 15                                  # cuadros por segundo del video
 um_por_px = 0.09524703938865117           # micras por píxel (usá 1 para quedarte en píxeles)
 error_um_por_px = 0.005           
@@ -33,4 +33,16 @@ def msd_trayectoria(archivo):
     #msd=r2
     return t[1:], msd
 
-trayectoria= msd_trayectoria()
+t,trayectoria= msd_trayectoria("trayectoria_particula11_video_sinLserGod1_1.avi.csv")
+
+fig,ax=plt.subplots()
+ax.plot(t,trayectoria)
+lineas = np.linspace(t[0],t[-1],8)
+for pos in lineas:
+
+    ax.axvline(x=pos, color='red', linestyle='--', linewidth=2, label='Línea en x=5')
+
+ax.set_ylabel(f"MSD [$\mu m$]")
+ax.set_xlabel("t [s]")
+ax.set_title("MSD de una sola partícula")
+
